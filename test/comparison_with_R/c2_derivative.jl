@@ -45,7 +45,7 @@ diff.c2=function(r,phi,order=0,which.cov="Gaussian",d=2,nu=NULL){
 """
 
 phirange = range(0.5, 3.0; step=0.5)
-srange = range(0.5, 3.0; step=0.5)
+srange = range(0.0, 3.0; step=0.5)
 nurange = range(0.5, 3.0; step=0.5)
 
 @testset verbose = true "c2_derivative" begin

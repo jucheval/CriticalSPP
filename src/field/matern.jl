@@ -28,8 +28,7 @@ function (cov::MaternCovariance)(r)
     ϕ = scale(cov)
 
     # guard r close to 0 to avoid numerical explosion
-    r ≈ 0 && return gamma(ν) / 2
-    # r += eps(typeof(r))
+    r ≈ 0 && return 1.0
 
     δ = r * √(2ν) / ϕ
     Β = besselk(ν, δ)
@@ -53,13 +52,13 @@ function c2_derivative(cov::MaternCovariance, s, k::Integer)
     k >= ν &&
         throw(ArgumentError("the order k must be less than the smoothness parameter nu"))
 
+    cst = (-1)^k * 2 / 2^k / ϕ^(2k) * ν^k / gamma(ν)
+
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return gamma(ν - k) / 2
+    s ≈ 0 && return cst * gamma(ν - k) / 2
 
     δ = √(s) * √(2ν) / ϕ
-
-    cst = (-1)^k * 2 / 2^ν / ϕ^(2k) * ν^k / gamma(ν)
-    return cst * δ^(ν - k) * besselk(ν - k, δ)
+    return cst * (δ / 2)^(ν - k) * besselk(ν - k, δ)
 end
 
 # Spectral moment
