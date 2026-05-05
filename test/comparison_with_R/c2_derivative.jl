@@ -1,3 +1,9 @@
+using Pkg
+Pkg.activate(joinpath(@__DIR__, "..", "..")) # Activate CriticalSPP project environment
+using CriticalSPP
+using DrWatson
+
+@quickactivate # Activate test project environment
 using RCall
 using Test
 
@@ -38,9 +44,28 @@ diff.c2=function(r,phi,order=0,which.cov="Gaussian",d=2,nu=NULL){
 }
 """
 
-# Gaussian covariance
-for phi in range(0.5, 3.0; step=0.5), d in 1:4, s in range(0.5, 3.0; step=0.5), k in 0:10
-    r_val = rcopy(R"diff.c2($s, $phi, order=$k, which.cov=\"Gaussian\", d=$d)")
-    jl_val = c2_derivative(GaussianCovariance(phi, d), s, k)
-    @test isapprox(r_val, jl_val)
-end
+phirange = range(0.5, 3.0; step=0.5)
+srange = range(0.5, 3.0; step=0.5)
+nurange = range(0.5, 3.0; step=0.5)
+
+@testset verbose = true "c2_derivative" begin
+    @testset "Gaussian covariance" begin
+        for phi in phirange, d in 1:4, s in srange, k in 0:10
+            r_val = rcopy(R"diff.c2($s, $phi, order=$k, which.cov=\"Gaussian\", d=$d)")
+            jl_val = c2_derivative(GaussianCovariance(phi, d), s, k)
+            @test isapprox(r_val, jl_val)
+        end
+    end
+
+    @testset "Matérn covariance" begin
+        for phi in phirange, nu in nurange, d in 1:4, s in srange
+            for k in 0:(ceil(Int, nu) - 1)
+                r_val = rcopy(
+                    R"diff.c2($s, $phi, order=$k, which.cov=\"Matern\", d=$d, nu=$nu)"
+                )
+                jl_val = c2_derivative(MaternCovariance(phi, nu, d), s, k)
+                @test isapprox(r_val, jl_val)
+            end
+        end
+    end
+end;

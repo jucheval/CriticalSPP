@@ -1,3 +1,9 @@
+using Pkg
+Pkg.activate(joinpath(@__DIR__, "..", "..")) # Activate CriticalSPP project environment
+using CriticalSPP
+using DrWatson
+
+@quickactivate # Activate test project environment
 using RCall
 using Test
 
@@ -11,9 +17,24 @@ th.lambda2p=function(phi,p=1,which.cov="Gaussian",d=2,nu=NULL){
 }
 """
 
-# Gaussian covariance
-for phi in range(0.5, 3.0; step=0.5), d in 1:4, p in 1:15
-    r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"Gaussian\", d=$d)")
-    jl_val = spectral_moment(GaussianCovariance(phi, d), p)
-    @test isapprox(r_val, jl_val)
-end
+phirange = range(0.5, 3.0; step=0.5)
+prange = 1:15
+nurange = range(0.5, 3.0; step=0.5)
+
+@testset verbose = true "spectral_moment" begin
+    @testset "Gaussian covariance" begin
+        for phi in phirange, d in 1:4, p in prange
+            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"Gaussian\", d=$d)")
+            jl_val = spectral_moment(GaussianCovariance(phi, d), p)
+            @test isapprox(r_val, jl_val)
+        end
+    end
+
+    @testset "Matérn covariance" begin
+        for phi in phirange, nu in nurange, d in 1:4, p in prange
+            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"Matern\", d=$d, nu=$nu)")
+            jl_val = spectral_moment(MaternCovariance(phi, nu, d), p)
+            @test isapprox(r_val, jl_val)
+        end
+    end
+end;
