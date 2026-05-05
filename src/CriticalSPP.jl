@@ -1,5 +1,8 @@
 module CriticalSPP
 
+using Bessels: gamma, besselk
+using Optim: optimize
+
 # Covariances
 export CovarianceSPP
 export GaussianCovariance, MaternCovariance, RWMCovariance
