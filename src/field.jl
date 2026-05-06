@@ -49,11 +49,20 @@ Return the `k`-th derivative of the auxiliary covariance function c₂ evaluated
 function c2_derivative end
 
 """
-    spectral_moment(cov, p)
+    spectral_moment(cov, p, [closedform])
 
-Return the `2p`-th spectral moment of the covariance model `cov`.
+Return the `2p`-th spectral moment of the covariance model `cov`. If `closedform=true` (the default), it uses a closed-form expression. Otherwise, it is computed using `c2_derivative(cov, 0, p)`.
 """
-function spectral_moment end
+# FIXME: numerical computation goes out of bounds for large p.
+# To see it, fix prange = 1:15 in test/spectral_moment.jl.
+function spectral_moment(cov::CovarianceSPP, p::Integer, closedform::Bool)
+    if closedform
+        return spectral_moment(cov, p)
+    else
+        c2p0 = c2_derivative(cov, 0, p)
+        return prod((p + 1):(2 * p)) * (-1)^p * c2p0
+    end
+end
 
 # Helper functions for Monte Carlo estimation
 """
