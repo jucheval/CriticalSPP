@@ -86,4 +86,14 @@ nurange = range(0.5, 3.0; step=0.5)
             @test isapprox(r_val, jl_val; rtol=1e-2) # higher tolerance due to numerical optimization
         end
     end
+
+    @testset "RWM covariance" begin
+        for phi in phirange, d in [2], val in range(0.01, 0.21; step=0.02)
+            r_val = rcopy(
+                R"practical.range(phi=$phi, which.cov=\"RWM\", d=$d, val=$val, nu=$nu)"
+            )
+            jl_val = practical_range(RWMCovariance(phi, d), val)
+            @test isapprox(r_val, jl_val; rtol=1e-2) # higher tolerance due to numerical optimization
+        end
+    end
 end;

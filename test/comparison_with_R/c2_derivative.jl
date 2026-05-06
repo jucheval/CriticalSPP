@@ -68,4 +68,12 @@ nurange = range(0.5, 3.0; step=0.5)
             end
         end
     end
+
+    @testset "RWM covariance" begin
+        for phi in phirange, d in 1:4, s in srange, k in 0:10
+            r_val = rcopy(R"diff.c2($s, $phi, order=$k, which.cov=\"RWM\", d=$d, nu=$nu)")
+            jl_val = c2_derivative(RWMCovariance(phi, d), s, k)
+            @test isapprox(r_val, jl_val)
+        end
+    end
 end;

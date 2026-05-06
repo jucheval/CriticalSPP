@@ -37,4 +37,12 @@ nurange = range(0.5, 3.0; step=0.5)
             @test isapprox(r_val, jl_val)
         end
     end
+
+    @testset "RWM covariance" begin
+        for phi in phirange, d in 1:4, p in prange
+            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"RWM\", d=$d, nu=$nu)")
+            jl_val = spectral_moment(RWMCovariance(phi, d), p)
+            @test isapprox(r_val, jl_val)
+        end
+    end
 end;
