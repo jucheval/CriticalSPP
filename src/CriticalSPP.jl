@@ -1,6 +1,6 @@
 module CriticalSPP
 
-using Bessels: gamma, besselk
+using Bessels: gamma, besselk, besselj
 using Optim: optimize
 
 # Covariances
