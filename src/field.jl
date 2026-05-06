@@ -22,7 +22,7 @@ scale(cov::CovarianceSPP) = cov.phi
 
 # Helper function to check that the dimension of the covariance model is less than 4
 @inline function _check_dimension(::Val{D}) where {D}
-    (1 <= D <= 4) || throw(ArgumentError("dimension D must satisfy 1 <= D <= 4"))
+    (1 <= D <= 4) || throw(DomainError(D, "dimension D must satisfy 1 <= D <= 4"))
     return D
 end
 
