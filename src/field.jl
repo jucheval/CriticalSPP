@@ -64,24 +64,14 @@ function spectral_moment(cov::CovarianceSPP, p::Integer, closedform::Bool)
     end
 end
 
-# Helper functions for Monte Carlo estimation
-"""
-    covariance_gradient_x0_xr(cov, r)
-
-Return the covariance matrix of the upper diagonal and diagonal of ∇X(0) and ∇X(`r`*e_1), where X is a Gaussian field with covariance `cov`.
-"""
-function covariance_gradient_x0_xr end
-
-"""
-    density_vr(cov, r)
-
-Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`.
-"""
-function density_vr end
-
 #-----------------
 # IMPLEMENTATIONS
 #-----------------
 include("field/gaussian.jl")
 include("field/matern.jl")
 include("field/rwm.jl")
+
+#-----------------
+# Helper functions for Monte Carlo estimation
+#-----------------
+include("field/helper_MC.jl")
