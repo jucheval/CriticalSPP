@@ -31,16 +31,20 @@ nurange = range(0.5, 3.0; step=0.5)
     end
 
     @testset "Matérn covariance" begin
-        for phi in phirange, nu in nurange, d in 1:4, p in prange
-            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"Matern\", d=$d, nu=$nu)")
-            jl_val = spectral_moment(MaternCovariance(phi, nu, d), p)
-            @test isapprox(r_val, jl_val)
+        for phi in phirange, nu in nurange, d in 1:4
+            for p in 1:(ceil(Int, nu) - 1)
+                r_val = rcopy(
+                    R"th.lambda2p($phi, p=$p, which.cov=\"Matern\", d=$d, nu=$nu)"
+                )
+                jl_val = spectral_moment(MaternCovariance(phi, nu, d), p)
+                @test isapprox(r_val, jl_val)
+            end
         end
     end
 
     @testset "RWM covariance" begin
         for phi in phirange, d in 1:4, p in prange
-            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"RWM\", d=$d, nu=$nu)")
+            r_val = rcopy(R"th.lambda2p($phi, p=$p, which.cov=\"RWM\", d=$d)")
             jl_val = spectral_moment(RWMCovariance(phi, d), p)
             @test isapprox(r_val, jl_val)
         end
