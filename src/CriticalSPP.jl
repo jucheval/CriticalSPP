@@ -3,6 +3,7 @@ module CriticalSPP
 using Bessels: gamma, besselk, besselj
 using Roots: find_zero
 using LinearAlgebra: Symmetric, diagind, diagm
+using Distributions: MvNormal, pdf
 
 # Covariances
 export CovarianceSPP

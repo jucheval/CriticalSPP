@@ -67,6 +67,24 @@ end
 """
     density_vr(cov, r)
 
-Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`.
+Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`. See  proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
 """
-function density_vr(cov::CovarianceSPP, r) end
+function density_vr(cov::CovarianceSPP, r)
+    C′0 = c2_derivative(cov, 0.0, 1)
+    C′r = c2_derivative(cov, r^2, 1)
+    C′′r = c2_derivative(cov, r^2, 2)
+
+    d = dimension(cov)
+
+    # Convention: set at least the upper diagonal and diagonal, 
+    # then symmetrize with `Symmetric(..., :U)`.
+    upper_diag = diagm(fill(-2C′0, 2d))
+
+    upper_diag[1, d + 1] = -2C′r - 4r^2 * C′′r
+    for i in 2:d
+        upper_diag[i, d + i] = -2C′r
+    end
+
+    Σ = Symmetric(upper_diag, :U)
+    return pdf(MvNormal(Σ), zeros(2d))
+end
