@@ -10,8 +10,12 @@ using CriticalSPP
 println("Starting tests\n")
 ti = time()
 
-@testset verbose = true "Spectral moments (numerical and closed-form comply)" begin
+@testset verbose = true "Spectral moments (numerical and closed-form compliance)" begin
     include("spectral_moment.jl")
+end
+
+@testset verbose = true "Practical range (inverse of covariance)" begin
+    include("practical_range.jl")
 end
 
 ti = time() - ti
