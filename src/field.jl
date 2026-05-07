@@ -37,7 +37,7 @@ function (cov::CovarianceSPP) end
 """
     practical_range(cov, val)
 
-Return the practical range of the covariance model `cov` corresponding to the value `val`. More precisely, the practical range is defined as the distance `r` such that cov(`r`) = `val`.
+Return the practical range of the covariance model `cov` corresponding to the value `val`. More precisely, when `cov` is a decreasing covariance function, the practical range is defined as the distance `r₀` such that `cov(r₀) = val`. Otherwise, the practical range is such that `abs(cov(r)) <= val == true` for all `r >= r₀`.
 """
 function practical_range end
 
