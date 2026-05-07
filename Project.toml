@@ -5,7 +5,7 @@ authors = ["Julien Chevallier", "Jean François Coeurjolly", "Rasmus Waagepeters
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
-Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 
 [compat]
 DrWatson = "2.19.1"

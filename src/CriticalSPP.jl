@@ -1,7 +1,7 @@
 module CriticalSPP
 
 using Bessels: gamma, besselk, besselj
-using Optim: optimize
+using Roots: find_zero
 
 # Covariances
 export CovarianceSPP

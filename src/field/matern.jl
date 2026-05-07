@@ -42,9 +42,9 @@ function practical_range(cov::MaternCovariance, val)
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
 
     initial_guess = practical_range(GaussianCovariance(scale(cov), dimension(cov)), val)
-    f(x) = (c2_derivative(cov, x^2, 0) - val)^2
-    result = optimize(x -> f(first(x)), [initial_guess])
-    return first(result.minimizer)
+    f(x) = cov(x) - val
+
+    return find_zero(f, initial_guess)
 end
 
 # c₂ derivative
