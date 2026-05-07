@@ -51,7 +51,7 @@ end
 function c2_derivative(cov::MaternCovariance, s, k::Integer)
     ν = cov.nu
     ϕ = scale(cov)
-    k >= ν &&
+    k < ν ||
         throw(ArgumentError("the order k must be less than the smoothness parameter nu"))
 
     cst = (-1)^k * 2 / 2^k / ϕ^(2k) * ν^k / gamma(ν)
