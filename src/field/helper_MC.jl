@@ -14,14 +14,13 @@ function covariance_hessians_x0_xr(cov::CovarianceSPP, r)
     # then symmetrize with `Symmetric(..., :U)`.
     if d == 1
         Γ₁ = 12 * C0[3]
-        M = (12 * Cr[3] + 8 * r^2 * Cr[4])^2
-        Γ₁ = Γ₁ + r^2 * C0[2] / (2 * (C0[2]^2 - (Cr[2] + 2 * r^2 * Cr[3])^2)) * M
+        M = (12 * Cr[3] + 8r^2 * Cr[4])^2
+        Γ₁ = Γ₁ + r^2 * C0[2] / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
         Γ₃ = 12 * Cr[3]
-        Γ₃ = Γ₃ + 48 * r^2 * Cr[4] + 16 * r^4 * Cr[5]
+        Γ₃ = Γ₃ + 48r^2 * Cr[4] + 16r^4 * Cr[5]
         Γ₃ =
             Γ₃ +
-            r^2 * (Cr[2] + 2 * r^2 * Cr[3]) /
-            (2 * (C0[2]^2 - (Cr[2] + 2 * r^2 * Cr[3])^2)) * M
+            r^2 * (Cr[2] + 2r^2 * Cr[3]) / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
         upper_diag = [Γ₁ Γ₃; Γ₃ Γ₁]
     else
         M = zeros(d, d)
