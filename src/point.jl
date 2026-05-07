@@ -47,6 +47,13 @@ Return the type of critical points considered in the critical spatial point proc
 critical_type(::CriticalPointProcess{<:CovarianceSPP,CT}) where {CT<:AbstractCriticalType} =
     CT()
 
+"""
+    covariance(cpp)
+
+Return the covariance model underlying the critical spatial point process `cpp`.
+"""
+covariance(cpp::CriticalPointProcess) = cpp.cov
+
 #-----------------
 # IMPLEMENTATIONS
 #-----------------

@@ -1,11 +1,18 @@
-using Random: Random
-
 """
     intensity(cpp)
 
 Return the intensity of the critical spatial point process `cpp`.
 """
-function intensity end
+function intensity(cpp::CriticalPointProcess)
+    cov = covariance(cpp)
+    d = dimension(cov)
+    type = critical_type(cpp)
+
+    λ₂ = spectral_moment(cov, 1)
+    λ₄ = spectral_moment(cov, 2)
+    cst = _intensity_constant_dict[(d, type)]
+    return cst * (λ₄ / (3 * λ₂))^(d / 2)
+end
 
 """
     scale_from_intensity(CPP, rho)
@@ -167,3 +174,16 @@ function _pair_correlation_single(
 )
     throw(ArgumentError("Implement _pair_correlation_single for your Monte Carlo kernel"))
 end
+
+_I = 0.30120734 # MC estimation of E( Φ(Y) * Φ(√2Y)) with Y ~ N(0,1/3) on 1e9 samples
+
+_intensity_constant_dict = Dict(
+    (1, ALL_CRITICAL) => √3 / π, #sqrt(3/(2*π))*E},  with E=sqrt(2/π)
+    (1, MAX_CRITICAL) => √3 / (2π), #sqrt(3/(2*π))*E*.5})
+    (2, ALL_CRITICAL) => 2 / (π√3),
+    (2, MAX_CRITICAL) => 0.25 * 2 / (π√3),
+    (3, ALL_CRITICAL) => 1 / (π^2 * √2) * 116 / (12√6),
+    (3, MAX_CRITICAL) => 1 / (π^2 * √2) * (29 - 6√6) / (12√6),
+    (4, ALL_CRITICAL) => 1 / π^2 * 100 / (24√3),
+    (4, MAX_CRITICAL) => 1 / π^2 * (_I * 100π - 57) / (48√3 * π),
+)
