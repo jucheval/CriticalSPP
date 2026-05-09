@@ -60,8 +60,10 @@ function c2_derivative(cov::RWMCovariance, s, k::Integer)
     # guard s close to 0 to avoid numerical explosion
     s ≈ 0 && return cst / gamma(D / 2 + k)
 
+    α = D / 2 - 1 + k
     δ = √s * √D / ϕ
-    return cst * (δ / 2)^(-(D / 2 - 1 + k)) * besselj(D / 2 - 1 + k, δ)
+
+    return cst * (δ / 2)^(-α) * besselj(α, δ)
 end
 
 # Spectral moment

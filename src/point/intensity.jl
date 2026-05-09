@@ -220,8 +220,8 @@ end
 _I = 0.30120734 # MC estimation of E( Φ(Y) * Φ(√2Y)) with Y ~ N(0,1/3) on 1e9 samples
 
 _intensity_constant_dict = Dict(
-    (1, ALL_CRITICAL) => √3 / π, #sqrt(3/(2*π))*E},  with E=sqrt(2/π)
-    (1, MAX_CRITICAL) => √3 / (2π), #sqrt(3/(2*π))*E*.5})
+    (1, ALL_CRITICAL) => √3 / π,
+    (1, MAX_CRITICAL) => √3 / (2π),
     (2, ALL_CRITICAL) => 2 / (π√3),
     (2, MAX_CRITICAL) => 0.25 * 2 / (π√3),
     (3, ALL_CRITICAL) => 1 / (π^2 * √2) * 116 / (12√6),

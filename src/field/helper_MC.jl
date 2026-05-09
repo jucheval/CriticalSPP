@@ -5,49 +5,55 @@
 Return the covariance matrix of the upper diagonal and diagonal of the Hessians ∇²X(0) and ∇²X(`r`e₁) given that ∇X(0) = ∇X(`r`e₁) = 0, where X is a Gaussian field with covariance `cov`. See Lemma 8 in Azaïs & Delmas (2022).
 """
 function covariance_hessians_x0_xr(cov::CovarianceSPP, r)
-    C0 = map(k -> c2_derivative(cov, 0.0, k), 0:4)
-    Cr = map(k -> c2_derivative(cov, r^2, k), 0:4)
+    # -----
+    # Notations from Lemma 8 in Azaïs & Delmas (2022)
+    ρ = r
+
+    𝐫′0 = c2_derivative(cov, 0.0, 1)
+    𝐫′′0 = c2_derivative(cov, 0.0, 2)
+
+    𝐫′ = c2_derivative(cov, ρ^2, 1)
+    𝐫′′ = c2_derivative(cov, ρ^2, 2)
+    𝐫′′′ = c2_derivative(cov, ρ^2, 3)
+    𝐫′′′′ = c2_derivative(cov, ρ^2, 4)
+    # -----
 
     d = dimension(cov)
 
     # Convention: set at least the upper diagonal and diagonal, 
     # then symmetrize with `Symmetric(..., :U)`.
     if d == 1
-        Γ₁ = 12 * C0[3]
-        M = (12 * Cr[3] + 8r^2 * Cr[4])^2
-        Γ₁ = Γ₁ + r^2 * C0[2] / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
-        Γ₃ = 12 * Cr[3]
-        Γ₃ = Γ₃ + 48r^2 * Cr[4] + 16r^4 * Cr[5]
-        Γ₃ =
-            Γ₃ +
-            r^2 * (Cr[2] + 2r^2 * Cr[3]) / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
+        Γ₁ = 12 * 𝐫′′0
+        M = (12 * 𝐫′′ + 8ρ^2 * 𝐫′′′)^2
+        Γ₁ = Γ₁ + ρ^2 * 𝐫′0 / (2 * (𝐫′0^2 - (𝐫′ + 2ρ^2 * 𝐫′′)^2)) * M
+        Γ₃ = 12 * 𝐫′′
+        Γ₃ = Γ₃ + 48ρ^2 * 𝐫′′′ + 16ρ^4 * 𝐫′′′′
+        Γ₃ = Γ₃ + ρ^2 * (𝐫′ + 2ρ^2 * 𝐫′′) / (2 * (𝐫′0^2 - (𝐫′ + 2ρ^2 * 𝐫′′)^2)) * M
         upper_diag = [Γ₁ Γ₃; Γ₃ Γ₁]
     else
         M = zeros(d, d)
-        M[2:end, 2:end] .= 16 * Cr[3]^2
-        M[1, 2:end] .= 4 * Cr[3] * (12 * Cr[3] + 8r^2 * Cr[4])
-        M[2:end, 1] .= 4 * Cr[3] * (12 * Cr[3] + 8r^2 * Cr[4])
-        M[1, 1] = (12 * Cr[3] + 8r^2 * Cr[4])^2
+        M[2:end, 2:end] .= 16 * 𝐫′′^2
+        M[1, 2:end] .= 4 * 𝐫′′ * (12 * 𝐫′′ + 8ρ^2 * 𝐫′′′)
+        M[2:end, 1] .= 4 * 𝐫′′ * (12 * 𝐫′′ + 8ρ^2 * 𝐫′′′)
+        M[1, 1] = (12 * 𝐫′′ + 8ρ^2 * 𝐫′′′)^2
 
-        Γ₁ = 4 * C0[3] * ones(d, d)
-        Γ₁[diagind(Γ₁)] .= 12 * C0[3]
-        Γ₁ += r^2 * C0[2] / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
+        Γ₁ = 4 * 𝐫′′0 * ones(d, d)
+        Γ₁[diagind(Γ₁)] .= 12 * 𝐫′′0
+        Γ₁ += ρ^2 * 𝐫′0 / (2 * (𝐫′0^2 - (𝐫′ + 2ρ^2 * 𝐫′′)^2)) * M
 
-        Γ₃ = 4 * Cr[3] * ones(d, d)
-        Γ₃[diagind(Γ₃)] .= 12 * Cr[3]
-        Γ₃[1, 2:end] .+= 8r^2 * Cr[4]
-        Γ₃[2:end, 1] .+= 8r^2 * Cr[4]
-        Γ₃[1, 1] += 48r^2 * Cr[4] + 16r^4 * Cr[5]
-        Γ₃ += r^2 * (Cr[2] + 2r^2 * Cr[3]) / (2 * (C0[2]^2 - (Cr[2] + 2r^2 * Cr[3])^2)) * M
+        Γ₃ = 4 * 𝐫′′ * ones(d, d)
+        Γ₃[diagind(Γ₃)] .= 12 * 𝐫′′
+        Γ₃[1, 2:end] .+= 8ρ^2 * 𝐫′′′
+        Γ₃[2:end, 1] .+= 8ρ^2 * 𝐫′′′
+        Γ₃[1, 1] += 48ρ^2 * 𝐫′′′ + 16ρ^4 * 𝐫′′′′
+        Γ₃ += ρ^2 * (𝐫′ + 2ρ^2 * 𝐫′′) / (2 * (𝐫′0^2 - (𝐫′ + 2ρ^2 * 𝐫′′)^2)) * M
 
-        D₁ = fill(4 * C0[3] + 8r^2 * Cr[3]^2 * C0[2] / (C0[2]^2 - Cr[2]^2), d - 1)
-        D₂ = fill(4 * C0[3], (d - 1) * (d - 2) ÷ 2)
+        D₁ = fill(4 * 𝐫′′0 + 8ρ^2 * 𝐫′′^2 * 𝐫′0 / (𝐫′0^2 - 𝐫′^2), d - 1)
+        D₂ = fill(4 * 𝐫′′0, (d - 1) * (d - 2) ÷ 2)
         Γ₂ = diagm([D₁; D₂])
 
-        D̃₁ = fill(
-            4 * Cr[3] + 8r^2 * (Cr[4] + Cr[3]^2 * Cr[2] / (C0[2]^2 - Cr[2]^2)), d - 1
-        )
-        D̃₂ = fill(4 * Cr[3], (d - 1) * (d - 2) ÷ 2)
+        D̃₁ = fill(4 * 𝐫′′ + 8ρ^2 * (𝐫′′′ + 𝐫′′^2 * 𝐫′ / (𝐫′0^2 - 𝐫′^2)), d - 1)
+        D̃₂ = fill(4 * 𝐫′′, (d - 1) * (d - 2) ÷ 2)
         Γ₄ = diagm([D̃₁; D̃₂])
 
         k = d * (d - 1) ÷ 2
@@ -67,22 +73,27 @@ end
 """
     density_vr(cov, r)
 
-Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`. See  proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
+Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`. See proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
 """
 function density_vr(cov::CovarianceSPP, r)
-    C′0 = c2_derivative(cov, 0.0, 1)
-    C′r = c2_derivative(cov, r^2, 1)
-    C′′r = c2_derivative(cov, r^2, 2)
+    # -----
+    # Notations from Lemma 8 in Azaïs & Delmas (2022)
+    ρ = r
+
+    𝐫′0 = c2_derivative(cov, 0.0, 1)
+    𝐫′ = c2_derivative(cov, ρ^2, 1)
+    𝐫′′ = c2_derivative(cov, ρ^2, 2)
+    # -----
 
     d = dimension(cov)
 
     # Convention: set at least the upper diagonal and diagonal, 
     # then symmetrize with `Symmetric(..., :U)`.
-    upper_diag = diagm(fill(-2C′0, 2d))
+    upper_diag = diagm(fill(-2𝐫′0, 2d))
 
-    upper_diag[1, d + 1] = -2C′r - 4r^2 * C′′r
+    upper_diag[1, d + 1] = -2𝐫′ - 4ρ^2 * 𝐫′′
     for i in 2:d
-        upper_diag[i, d + i] = -2C′r
+        upper_diag[i, d + i] = -2𝐫′
     end
 
     Σ = Symmetric(upper_diag, :U)
