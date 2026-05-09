@@ -217,7 +217,8 @@ end
 #     throw(ArgumentError("Implement _pair_correlation_single for your Monte Carlo kernel"))
 # end
 
-_I = 0.30120734 # MC estimation of E( Φ(Y) * Φ(√2Y)) with Y ~ N(0,1/3) on 1e9 samples
+_I = 0.301208 # Quasi Monte Carlo estimation of E( Φ(Y) * Φ(√2Y)) with Y ~ N(0,1/3)
+# See the file computation_I.jl
 
 _intensity_constant_dict = Dict(
     (1, ALL_CRITICAL) => √3 / π,
