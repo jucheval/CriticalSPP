@@ -10,7 +10,7 @@ function intensity(cpp::CriticalPointProcess)
 
     λ₂ = spectral_moment(cov, 1)
     λ₄ = spectral_moment(cov, 2)
-    cst = _intensity_constant_dict[(d, type)]
+    cst = INTENSITY_CONSTANT_DICT[(d, type)]
     return cst * (λ₄ / (3 * λ₂))^(d / 2)
 end
 
@@ -28,10 +28,7 @@ function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     type = critical_type(cpp)
     D = dimension(cov)
 
-    # re-implementation of the intensity function 
-    # to avoid CovarianceSPP and CriticalPointProcess constructors 
-    # in the root-finding loop
-    cst = _intensity_constant_dict[(D, type)]
+    cst = INTENSITY_CONSTANT_DICT[(D, type)]
 
     return √K * (cst / rho)^(1 / D)
 end
@@ -190,10 +187,10 @@ end
 #     throw(ArgumentError("Implement _pair_correlation_single for your Monte Carlo kernel"))
 # end
 
-_I = 0.301208 # Quasi Monte Carlo estimation of E( Φ(Y) * Φ(√2Y)) with Y ~ N(0,1/3)
+_I = 0.301208 # Quasi Monte Carlo estimation of E( Φ(Y) * Φ(√2Y) ) with Y ~ N(0,1/3)
 # See the file computation_I.jl
 
-_intensity_constant_dict = Dict(
+const INTENSITY_CONSTANT_DICT = Dict(
     (1, ALL_CRITICAL) => √3 / π,
     (1, MAX_CRITICAL) => √3 / (2π),
     (2, ALL_CRITICAL) => 2 / (π√3),
