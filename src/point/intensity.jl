@@ -17,7 +17,10 @@ end
 """
     scale_from_intensity(cpp, rho)
 
-Return the scale parameter `phi` corresponding to the intensity `rho` for the critical spatial point process model inferred from `cpp`. More precisely, the scale parameter of the input underlying covariance `cpp.cov` is not used, but other necessary informations (e.g. type of critical points, dimension and smoothness parameter) are inferred from `cpp`.
+Return the scale parameter `phi` corresponding to the intensity `rho` for the critical spatial point process model inferred from `cpp`. 
+
+*Remark:*
+The scale parameter of the input underlying covariance `cpp.cov` is not used, but other necessary informations (e.g. type of critical points, dimension and smoothness parameter) are inferred from `cpp`.
 """
 function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     rho > 0 || throw(DomainError(rho, "intensity rho must be positive"))
