@@ -1,11 +1,13 @@
 """
-    GaussianCovariance(phi, d)
+    GaussianCovariance([phi], d)
 
 Gaussian covariance with scale parameter `phi` used for a field of dimension `d`. It is defined as
 
 ```math
 c(r) = \\exp(- r^2 / (2\\phi^2))
 ```
+
+The scale parameter `phi` is optional and defaults to 1.0.
 """
 struct GaussianCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -18,6 +20,8 @@ function GaussianCovariance(phi::T, d::Integer) where {T<:Real}
 
     return GaussianCovariance{d,T}(phi)
 end
+
+GaussianCovariance(d::Integer) = GaussianCovariance(1.0, d)
 
 # Functor
 function (cov::GaussianCovariance)(r)

@@ -1,5 +1,5 @@
 """
-    MaternCovariance(phi, nu, d)
+    MaternCovariance([phi], nu, d)
 
 Matérn covariance with scale parameter `phi` and smoothness parameter `nu` used for a field of dimension `d`. It is defined as
 
@@ -7,6 +7,8 @@ Matérn covariance with scale parameter `phi` and smoothness parameter `nu` used
 c(r) = \\frac{2^{1-\\nu}}{\\Gamma(\\nu)} \\left(\\frac{r \\sqrt{2\\nu}}{\\phi}\\right)^\\nu K_\\nu\\left(\\frac{r \\sqrt{2\\nu}}{\\phi}\\right),
 ```
 where ``K_\\nu`` is the modified Bessel function of the second kind.
+
+The scale parameter `phi` is optional and defaults to 1.0.
 """
 struct MaternCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -20,6 +22,8 @@ function MaternCovariance(phi::T, nu::T, d::Integer) where {T<:Real}
     nu > zero(T) || throw(DomainError(nu, "nu must be positive"))
     return MaternCovariance{d,T}(phi, nu)
 end
+
+MaternCovariance(nu::T, d::Integer) where {T<:Real} = MaternCovariance(1.0, nu, d)
 
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl

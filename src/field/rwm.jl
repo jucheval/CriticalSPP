@@ -1,5 +1,5 @@
 """
-    RWMCovariance(phi, d)
+    RWMCovariance([phi], d)
 
 Random Wave Model covariance with scale parameter `phi` used for a field of dimension `d`. It is defined as
 
@@ -7,6 +7,8 @@ Random Wave Model covariance with scale parameter `phi` used for a field of dime
 c(r) = \\Gamma(d/2) (\\frac{r}{2\\phi'})^{-(d/2-1)} J_{d/2-1}(r / \\phi'), \\quad \\phi' = \\phi/\\sqrt{d},
 ```
 where ``J_\\nu`` is the Bessel function of the first kind.
+
+The scale parameter `phi` is optional and defaults to 1.0.
 """
 struct RWMCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -18,6 +20,8 @@ function RWMCovariance(phi::T, d::Integer) where {T<:Real}
     phi > zero(T) || throw(DomainError(phi, "phi must be positive"))
     return RWMCovariance{d,T}(phi)
 end
+
+RWMCovariance(d::Integer) = RWMCovariance(1.0, d)
 
 # Functor
 function (cov::RWMCovariance)(r)
