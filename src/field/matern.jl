@@ -66,16 +66,14 @@ end
 # Spectral moment
 function spectral_moment(cov::MaternCovariance, p::Integer)
     ν = cov.nu
-    p >= ν && throw(
-        ArgumentError("the half-order p must be less than the smoothness parameter nu")
-    )
-
-    return _spectral_moment_matern(p, scale(cov), ν)
-end
-
-function _spectral_moment_matern(p::Integer, ϕ, ν)
+    ϕ = scale(cov)
     return prod((1:2:(2p))) / ϕ^(2p) * ν^p / prod(ν .- (1:p))
 end
 
 # Internals
-_string(::MaternCovariance) = "matern"
+function constant_λ₄_over_3λ₂(cov::MaternCovariance)
+    ν = cov.nu
+
+    ν > 2 || throw(ArgumentError("the smoothness parameter nu must be greater than 2"))
+    return ν / (ν - 2)
+end

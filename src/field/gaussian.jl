@@ -44,12 +44,10 @@ end
 
 # Spectral moment
 function spectral_moment(cov::GaussianCovariance, p::Integer)
-    return _spectral_moment_gaussian(p, scale(cov))
-end
-
-function _spectral_moment_gaussian(p::Integer, ϕ)
-    return prod((1:2:(2 * p))) / ϕ^(2 * p)
+    return prod((1:2:(2 * p))) / scale(cov)^(2 * p)
 end
 
 # Internals
-_string(::GaussianCovariance) = "gaussian"
+function constant_λ₄_over_3λ₂(::GaussianCovariance)
+    return 1.0
+end
