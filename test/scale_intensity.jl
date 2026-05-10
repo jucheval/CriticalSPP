@@ -1,3 +1,4 @@
+phirange = range(0.5, 3.0; step=0.5)
 rhorange = range(1.0, 100.0; step=5.0)
 nurange = range(2.5, 4.0; step=0.5)
 valrange = range(0.1, 0.9; step=0.1)
