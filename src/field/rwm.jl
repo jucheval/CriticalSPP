@@ -68,12 +68,13 @@ end
 
 # Spectral moment
 function spectral_moment(cov::RWMCovariance, p::Integer)
-    return _spectral_moment_RWM(p, scale(cov), dimension(cov))
-end
-
-function _spectral_moment_RWM(p::Integer, ϕ, D)
+    D = dimension(cov)
+    ϕ = scale(cov)
     return prod((1:2:(2p))) / ϕ^(2p) * D^p / prod(D .+ 2 * (0:(p - 1)))
 end
 
 # Internals
-_string(::RWMCovariance) = "RWM"
+function constant_λ₄_over_3λ₂(cov::RWMCovariance)
+    D = dimension(cov)
+    return D / (D + 2)
+end

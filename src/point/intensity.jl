@@ -23,14 +23,7 @@ function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     rho > 0 || throw(DomainError(rho, "intensity rho must be positive"))
 
     cov = covariance(cpp)
-    if cov isa MaternCovariance
-        cov.nu > 2 || throw(
-            DomainError(
-                cpp,
-                "the smoothness parameter ν of the Matern covariance must be greater than 2",
-            ),
-        )
-    end
+    K = constant_λ₄_over_3λ₂(cov)
 
     type = critical_type(cpp)
     D = dimension(cov)
@@ -40,27 +33,7 @@ function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     # in the root-finding loop
     cst = _intensity_constant_dict[(D, type)]
 
-    if cov isa GaussianCovariance
-        sp_moment = _spectral_moment_gaussian
-        args = ()
-    elseif cov isa MaternCovariance
-        sp_moment = _spectral_moment_matern
-        args = (cov.nu,)
-    elseif cov isa RWMCovariance
-        sp_moment = _spectral_moment_RWM
-        args = (D,)
-    else
-        throw(ArgumentError("Unsupported covariance type: $(typeof(cov))"))
-    end
-
-    function f(ϕ)
-        λ₂ = sp_moment(1, ϕ, args...)
-        λ₄ = sp_moment(2, ϕ, args...)
-        rho′ = cst * (λ₄ / (3 * λ₂))^(D / 2)
-        return rho′ - rho
-    end
-
-    return find_zero(f, (1e-6, 1e6))
+    return √K * (cst / rho)^(1 / D)
 end
 
 # """
@@ -229,10 +202,4 @@ _intensity_constant_dict = Dict(
     (3, MAX_CRITICAL) => 1 / (π^2 * √2) * (29 - 6√6) / (12√6),
     (4, ALL_CRITICAL) => 1 / π^2 * 100 / (24√3),
     (4, MAX_CRITICAL) => 1 / π^2 * (_I * 100π - 57) / (48√3 * π),
-)
-
-sp_moment_dict = Dict(
-    "gaussian" => _spectral_moment_gaussian,
-    "matern" => _spectral_moment_matern,
-    "RWM" => _spectral_moment_RWM,
 )
