@@ -99,3 +99,75 @@ function density_vr(cov::CovarianceSPP, r)
     Σ = Symmetric(upper_diag, :U)
     return pdf(MvNormal(Σ), zeros(2d))
 end
+
+"""
+    det_minor(v, m)
+
+Compute the determinant of the m x m minor of a d x d symmetric matrix defined by the entries of `v`, where `v` is a vector of length d + d*(d-1)/2 containing the diagonal and upper diagonal entries of the symmetric matrix. 
+
+*Remark:* `v` does not correspond to the usual vectorization of a symmetric matrix, but rather to the specific layout used in Lemma 8 of Azaïs & Delmas (2022) for the Hessians. The order of entries in `v` is as follows: first the diagonal entries (d of them), then the upper diagonal entries in row-major order (d*(d-1)/2 of them). The minor is defined by the first m rows and columns of the original symmetric matrix.
+"""
+function det_minor(v::Vector, m::Integer)
+    d = Int((-1 + isqrt(1 + 8 * length(v))) ÷ 2)
+    if d + d * (d - 1) / 2 != length(v)
+        throw(
+            DomainError(
+                v,
+                "The vector length must correspond to the number of unique entries in a symmetric d x d matrix, i.e. d + d*(d-1)/2.",
+            ),
+        )
+    end
+    if m > d
+        throw(
+            DomainError(
+                m,
+                "The minor order m must be less than or equal to the dimension d inferred from the vector length.",
+            ),
+        )
+    end
+
+    inds = DET_MINOR_INDICES[(d, m)]
+    return det_at_positions(v, inds)
+end
+
+const DET_MINOR_INDICES = Dict(
+    (1, 1) => (1,),
+    (2, 1) => (1,),
+    (2, 2) => (1, 3, 3, 2),
+    (3, 1) => (1,),
+    (3, 2) => (1, 4, 4, 2),
+    (3, 3) => (1, 4, 5, 4, 2, 6, 5, 6, 3),
+    (4, 1) => (1,),
+    (4, 2) => (1, 5, 5, 2),
+    (4, 3) => (1, 5, 6, 5, 2, 8, 6, 8, 3),
+    (4, 4) => (1, 5, 6, 7, 5, 2, 8, 9, 6, 8, 3, 10, 7, 9, 10, 4),
+)
+
+"""
+    det_at_positions(v::Vector, i::NTuple{N,Int})
+
+Compute the determinant of a d x d matrix defined by the entries of `v` at indices `i`, where `i` is a tuple of N = d^2 integers corresponding to the positions of the entries in the vectorized symmetric matrix. The order of indices in `i` should correspond to the layout of the d x d minor in the original symmetric matrix. It is implemented for `N` equal to 1, 4, 9, and 16, corresponding to 1x1, 2x2, 3x3, and 4x4 minors, respectively.
+"""
+det_at_positions(v::Vector, i::NTuple{1,Int}) = v[i[1]]
+
+det_at_positions(v::Vector, i::NTuple{4,Int}) = v[i[1]] * v[i[4]] - v[i[2]] * v[i[3]]
+
+function det_at_positions(v::Vector, i::NTuple{9,Int})
+    return v[i[1]] * det_at_positions(v, (i[5], i[6], i[8], i[9])) -
+           v[i[2]] * det_at_positions(v, (i[4], i[6], i[7], i[9])) +
+           v[i[3]] * det_at_positions(v, (i[4], i[5], i[7], i[8]))
+end
+
+function det_at_positions(v::Vector, i::NTuple{16,Int})
+    return v[i[1]] * det_at_positions(
+        v, (i[6], i[7], i[8], i[10], i[11], i[12], i[14], i[15], i[16])
+    ) -
+           v[i[2]] * det_at_positions(
+        v, (i[5], i[7], i[8], i[9], i[11], i[12], i[13], i[15], i[16])
+    ) +
+           v[i[3]] * det_at_positions(
+        v, (i[5], i[6], i[8], i[9], i[10], i[12], i[13], i[14], i[16])
+    ) -
+           v[i[4]] *
+           det_at_positions(v, (i[5], i[6], i[7], i[9], i[10], i[11], i[13], i[14], i[15]))
+end
