@@ -167,8 +167,10 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
 
     pcf = M
     stderr = sqrt(S / (n_MC - 1))
+    # stderr *= 1.959964 / sqrt(n_MC) # uncomment if testing compliance with R code
 
     return (pcf, stderr, eig_val)
+    # return (pcf, stderr, ξ) # uncomment if testing compliance with R code
 end
 
 """
