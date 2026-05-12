@@ -70,7 +70,15 @@ Return the covariance model underlying the critical spatial point process `cpp`.
 """
 covariance(cpp::CriticalPointProcess) = cpp.cov
 
+"""
+    dimension(cpp)
+
+Return the dimension of the critical Point Process `cpp`, which is the same as the dimension of its covariance model.
+"""
+dimension(cpp::CriticalPointProcess) = dimension(covariance(cpp))
+
 #-----------------
 # IMPLEMENTATIONS
 #-----------------
 include("point/intensity.jl")
+include("point/pcf.jl")
