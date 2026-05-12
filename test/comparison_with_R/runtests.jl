@@ -5,6 +5,10 @@ using LinearAlgebra
 @quickactivate # Activate test project environment
 using RCall
 
+# Warning: 
+### two lines of code must be uncommented in src/point/pcf.jl to test compliance with R code. 
+### They are at the end of the function _pair_correlation_single
+
 # Execute the following command in the terminal:
 # julia --project=. --color=yes test/comparison_with_R/runtests.jl
 
@@ -35,6 +39,10 @@ end
 println("----")
 @testset verbose = true "covariance_hessians" begin
     include("covariance_hessians.jl")
+end
+println("----")
+@testset verbose = true "pair_correlation_function" begin
+    include("pcf.jl")
 end
 println("----")
 ti = time() - ti
