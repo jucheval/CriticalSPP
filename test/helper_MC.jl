@@ -58,7 +58,7 @@ include("vec_to_mat.jl")
 @testset "Determinant of minor matrices" begin
     for d in 1:4, m in 1:d, _ in 1:10
         v = randn(d + d * (d - 1) ÷ 2)
-        det_user = CriticalSPP.det_minor(v, m)
+        det_user = CriticalSPP.det_minor(v, m, d)
         M = vec_to_mat_test(v)
         det_test = det(M[1:m, 1:m])
         @test isapprox(det_user, det_test)

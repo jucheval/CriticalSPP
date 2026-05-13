@@ -153,14 +153,14 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     # Welford's online algorithm to compute mean and standard error in a single pass without storing all values.
     ξ0 = @view ξ[1:dd, 1]
     ξr = @view ξ[(dd + 1):(2 * dd), 1]
-    value = argument_of_expectation(critical_type(cpp), ξ0, ξr)
+    value = argument_of_expectation(critical_type(cpp), ξ0, ξr, D)
     M = value # running mean
     S = 0.0 # running sum of squared deviations
     count = 1
     for i in 2:n_MC
         ξ0 = @view ξ[1:dd, i]
         ξr = @view ξ[(dd + 1):(2 * dd), i]
-        value = argument_of_expectation(critical_type(cpp), ξ0, ξr)
+        value = argument_of_expectation(critical_type(cpp), ξ0, ξr, D)
 
         count += 1
         new_M = M + (value - M) / count
@@ -183,50 +183,45 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
 end
 
 """
-    argument_of_expectation(<:AbstractCriticalType, ξ0, ξr)
+    argument_of_expectation(<:AbstractCriticalType, ξ0, ξr, d)
 
-Compute the argument of the expectation in Eq (35) of Azaïs & Delmas (2022) for the given type of critical points, where `ξ0` and `ξr` represent the Hessians ∇²X(0) and ∇²X(t) in the vectorised form used in Lemma 8 of Azaïs & Delmas (2022).
+Compute the argument of the expectation in Eq (35) of Azaïs & Delmas (2022) for the given type of critical points, where `ξ0` and `ξr` represent the Hessians ∇²X(0) and ∇²X(t) in the vectorised form used in Lemma 8 of Azaïs & Delmas (2022). The dimension `d` is passed to avoid recomputing it from the vector length.
 """
-function argument_of_expectation(::AllCritical, ξ0::AbstractVector, ξr::AbstractVector)
-    length(ξ0) == length(ξr) ||
-        throw(DimensionMismatch("ξ0 and ξr must have the same length"))
-
-    d = d_from_vec(ξ0)
-    det0 = det_minor(ξ0, d)
-    detr = det_minor(ξr, d)
+function argument_of_expectation(
+    ::AllCritical, ξ0::AbstractVector, ξr::AbstractVector, d::Integer
+)
+    det0 = det_minor(ξ0, d, d)
+    detr = det_minor(ξr, d, d)
     return abs(det0) * abs(detr)
 end
 
-function argument_of_expectation(::MaxCritical, ξ0::AbstractVector, ξr::AbstractVector)
-    length(ξ0) == length(ξr) ||
-        throw(DimensionMismatch("ξ0 and ξr must have the same length"))
-
-    d = d_from_vec(ξ0)
-
+function argument_of_expectation(
+    ::MaxCritical, ξ0::AbstractVector, ξr::AbstractVector, d::Integer
+)
     m = 1
-    tmp0 = det_minor(ξ0, m)
-    tmpr = det_minor(ξr, m)
+    tmp0 = det_minor(ξ0, m, d)
+    tmpr = det_minor(ξr, m, d)
     ismax = (tmp0 < 0) && (tmpr < 0) # if true, the point is a local maximum candidate
     ismin = (tmp0 > 0) && (tmpr > 0) # if true, the point is a local minimum candidate
     # a local minimum corresponds to a positive definite Hessian
     # i.e. all leading principal minors are positive (Sylvester's criterion)
     while ismin && m < d
         m += 1
-        tmp0 = det_minor(ξ0, m)
-        tmpr = det_minor(ξr, m)
+        tmp0 = det_minor(ξ0, m, d)
+        tmpr = det_minor(ξr, m, d)
         ismin = (tmp0 > 0) && (tmpr > 0)
     end
     # a local maximum corresponds to minus Hessian being positive definite 
     # i.e. all leading principal minors of -H are positive
     while ismax && m < d
         m += 1
-        tmp0 = det_minor(ξ0, m)
-        tmpr = det_minor(ξr, m)
+        tmp0 = det_minor(ξ0, m, d)
+        tmpr = det_minor(ξr, m, d)
         ismax = ((-1)^m * tmp0 > 0) && ((-1)^m * tmpr > 0)
     end
 
     if ismax || ismin
-        # In that branch, tmp0 = det_minor(ξ0, d) and tmpr = det_minor(ξr, d) 
+        # In that branch, tmp0 = det_minor(ξ0, d, d) and tmpr = det_minor(ξr, d, d) 
         return 0.5 * abs(tmp0) * abs(tmpr)
         # By symmetry, the quantity for local maxima is the half of 
         # the quantity for all extrema

@@ -107,9 +107,7 @@ Compute the determinant of the m x m minor of a d x d symmetric matrix defined b
 
 *Remark:* `v` does not correspond to the usual vectorization of a symmetric matrix, but rather to the specific layout used in Lemma 8 of Azaïs & Delmas (2022) for the Hessians. The order of entries in `v` is as follows: first the diagonal entries (d of them), then the upper diagonal entries in row-major order (d*(d-1)/2 of them). The minor is defined by the first m rows and columns of the original symmetric matrix.
 """
-function det_minor(v::AbstractVector, m::Int)
-    d = d_from_vec(v)
-
+function det_minor(v::AbstractVector, m::Integer, d::Integer)
     if m == 1
         return v[1]
     elseif m == 2
@@ -136,17 +134,4 @@ function det_minor(v::AbstractVector, m::Int)
             v[9] * v[6] * v[8] - v[8] * v[7] * v[8]
         return v[1] * d1 - v[5] * d2 + v[6] * d3 - v[7] * d4
     end
-end
-
-function d_from_vec(v::AbstractVector)
-    d = Int((-1 + isqrt(1 + 8 * length(v))) ÷ 2)
-    if d + d * (d - 1) / 2 != length(v)
-        throw( # TODO: remove checks in internal functions
-            DomainError(
-                v,
-                "The vector length must correspond to the number of unique entries in a symmetric d x d matrix, i.e. d + d*(d-1)/2.",
-            ),
-        )
-    end
-    return d
 end
