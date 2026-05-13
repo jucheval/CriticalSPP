@@ -13,7 +13,7 @@ lags `rs` with Monte Carlo using the random number generator `rng`.
 - `parallel::Symbol=:auto`: execution policy, one of `:auto`, `:serial`, `:threads`.
 
 # Returns
-- `NamedTuple`: fields `rs`, `pcf`, `stderr`, `eig_val`, `n_MC`.
+- `NamedTuple`: fields `rs`, `pcf`, `stderr`, `n_MC`.
 """
 function pair_correlation_function(
     rng::AbstractRNG,
@@ -27,23 +27,17 @@ function pair_correlation_function(
 
     nlag = length(rs)
     if nlag == 0
-        return (
-            rs=Float64[],
-            pcf=Float64[],
-            stderr=Float64[],
-            eig_val=Tuple{Int,Float64}[],
-            n_MC=n_MC,
-        )
+        return (rs=Float64[], pcf=Float64[], stderr=Float64[], n_MC=n_MC)
     end
 
     use_threads = _thread_policy(parallel, nlag, n_MC)
-    pcf, stderr, eig_val = if use_threads
+    pcf, stderr = if use_threads
         _pair_correlation_threaded(rng, cpp, rs, n_MC)
     else
         _pair_correlation_serial(rng, cpp, rs, n_MC)
     end
 
-    return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, eig_val=eig_val, n_MC=n_MC)
+    return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, n_MC=n_MC)
 end
 
 function pair_correlation_function(
@@ -93,14 +87,13 @@ function _pair_correlation_serial(
 
     pcf = Vector{Float64}(undef, nlag)
     stderr = Vector{Float64}(undef, nlag)
-    eig_val = Vector{Tuple{Int,Float64}}(undef, nlag)
     N01 = randn(rng, 2dd, n_MC)
 
-    pcf, stderr, eig_val = map(rs) do r
+    pcf, stderr = map(rs) do r
         _pair_correlation_single(cpp, r, N01)
     end
 
-    return pcf, stderr, eig_val
+    return pcf, stderr
 end
 
 function _pair_correlation_threaded(
@@ -112,14 +105,13 @@ function _pair_correlation_threaded(
 
     pcf = Vector{Float64}(undef, nlag)
     stderr = Vector{Float64}(undef, nlag)
-    eig_val = Vector{Tuple{Int,Float64}}(undef, nlag)
     N01 = randn(rng, 2dd, n_MC)
 
     Threads.@threads for i in ProgressBar(eachindex(rs))
-        pcf[i], stderr[i], eig_val[i] = _pair_correlation_single(cpp, rs[i], N01)
+        pcf[i], stderr[i] = _pair_correlation_single(cpp, rs[i], N01)
     end
 
-    return pcf, stderr, eig_val
+    return pcf, stderr
 end
 
 """
@@ -137,11 +129,13 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
 
     Σ = covariance_hessians_x0_xr(cov, r)
     λ, P = eigen(Σ)
-    if !all(λ .> 0)
-        eig_val = (sum(λ .< 0), mean(λ[λ .< 0]))
-    else
-        eig_val = (0, NaN)
-    end
+    # # The following is used for debugging only
+    # # it checks whether the covariance matrix is positive definite
+    # if !all(λ .> 0) 
+    #     eig_val = (sum(λ .< 0), mean(λ[λ .< 0]))
+    # else
+    #     eig_val = (0, NaN)
+    # end
 
     diag = Diagonal(sqrt.(max.(λ, 0)))
     ξ = P * diag * N01  # ξ is 2dd x n_MC
@@ -174,7 +168,7 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     stderr = sqrt(S / (n_MC - 1))
     # stderr *= 1.959964 / sqrt(n_MC) # uncomment if testing compliance with R code
 
-    return (pcf, stderr, eig_val)
+    return pcf, stderr
     # return (pcf, stderr, ξ) # uncomment (and comment previous line) if testing compliance with R code
 end
 
