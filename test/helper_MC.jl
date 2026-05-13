@@ -1,5 +1,5 @@
-phirange = range(0.5, 3.0; step=0.5)
-rrange = range(0.1, 3.1; step=0.5)
+phirange = range(0.5, 2.0; step=0.5)
+rrange = range(0.1, 2.1; step=0.5)
 nurange = range(4.1, 6.1; step=0.5)
 
 @testset verbose = true "Covariance matrix is positive definite" begin

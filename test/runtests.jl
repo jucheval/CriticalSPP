@@ -1,6 +1,10 @@
 using DrWatson, Test
 using CriticalSPP
 using LinearAlgebra
+using Random: MersenneTwister
+using Logging
+
+global_logger(NullLogger()) # used to remove the logging info messages from the test output
 
 # The Pkg manager ]test macro does not work for DrWatson projects
 # We need to include the test files manually
@@ -25,6 +29,10 @@ end
 println("----")
 @testset verbose = true "Helper functions for MC estimation" begin
     include("helper_MC.jl")
+end
+println("----")
+@testset verbose = true "Pair correlation function" begin
+    include("pcf.jl")
 end
 println("----")
 ti = time() - ti

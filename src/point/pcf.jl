@@ -21,6 +21,7 @@ function pair_correlation_function(
     rs::AbstractVector{<:Real};
     n_MC::Integer=100_000,
     parallel::Symbol=:auto,
+    progressbar::Bool=true,
 )
     _check_nMC(n_MC)
     _check_parallel(parallel)
@@ -32,9 +33,9 @@ function pair_correlation_function(
 
     use_threads = _thread_policy(parallel, nlag, n_MC)
     pcf, stderr = if use_threads
-        _pair_correlation_threaded(rng, cpp, rs, n_MC)
+        _pair_correlation_threaded(rng, cpp, rs, n_MC, progressbar)
     else
-        _pair_correlation_serial(rng, cpp, rs, n_MC)
+        _pair_correlation_serial(rng, cpp, rs, n_MC, progressbar)
     end
 
     return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, n_MC=n_MC)
@@ -79,7 +80,11 @@ function _thread_policy(parallel::Symbol, nlag::Integer, n_MC::Integer)
 end
 
 function _pair_correlation_serial(
-    rng::AbstractRNG, cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer
+    rng::AbstractRNG,
+    cpp::CriticalPointProcess,
+    rs::AbstractVector{<:Real},
+    n_MC::Integer,
+    progressbar::Bool,
 )
     D = dimension(cpp)
     nlag = length(rs)
@@ -97,7 +102,11 @@ function _pair_correlation_serial(
 end
 
 function _pair_correlation_threaded(
-    rng::AbstractRNG, cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer
+    rng::AbstractRNG,
+    cpp::CriticalPointProcess,
+    rs::AbstractVector{<:Real},
+    n_MC::Integer,
+    progressbar::Bool,
 )
     D = dimension(cpp)
     nlag = length(rs)
@@ -107,7 +116,8 @@ function _pair_correlation_threaded(
     stderr = Vector{Float64}(undef, nlag)
     N01 = randn(rng, 2dd, n_MC)
 
-    Threads.@threads for i in ProgressBar(eachindex(rs))
+    iterator = progressbar ? ProgressBar(eachindex(rs)) : eachindex(rs)
+    Threads.@threads for i in iterator
         pcf[i], stderr[i] = _pair_correlation_single(cpp, rs[i], N01)
     end
 
