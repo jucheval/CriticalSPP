@@ -133,8 +133,6 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     D = dimension(cpp)
     cov = covariance(cpp)
     dd = D + D * (D - 1) ÷ 2 # dimension of Hessian matrices
-    size(N01, 1) == 2dd ||
-        throw(DimensionMismatch("N01 must have $(2dd) rows for dimension D=$D"))
     n_MC = size(N01, 2)
 
     Σ = covariance_hessians_x0_xr(cov, r)
