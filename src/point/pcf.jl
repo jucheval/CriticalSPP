@@ -1,8 +1,8 @@
 """
-    pair_correlation_function(cpp, rs; kwargs...)
+    pair_correlation_function([rng], cpp, rs; kwargs...)
 
 Estimate the pair correlation function of the critical point process `cpp` at
-lags `rs` with Monte Carlo.
+lags `rs` with Monte Carlo using the random number generator `rng`.
 
 # Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
@@ -11,20 +11,19 @@ lags `rs` with Monte Carlo.
 # Keyword Arguments
 - `n_MC::Integer=100_000`: number of Monte Carlo replications per lag.
 - `parallel::Symbol=:auto`: execution policy, one of `:auto`, `:serial`, `:threads`.
-- `rng::Random.AbstractRNG=Random.default_rng()`: random number generator.
 
 # Returns
 - `NamedTuple`: fields `rs`, `pcf`, `stderr`, `eig_val`, `n_MC`.
 """
 function pair_correlation_function(
+    rng::AbstractRNG,
     cpp::CriticalPointProcess,
     rs::AbstractVector{<:Real};
     n_MC::Integer=100_000,
     parallel::Symbol=:auto,
-    rng::AbstractRNG=default_rng(),
 )
-    _validate_nMC(n_MC)
-    _validate_parallel(parallel)
+    _check_nMC(n_MC)
+    _check_parallel(parallel)
 
     nlag = length(rs)
     if nlag == 0
@@ -39,21 +38,27 @@ function pair_correlation_function(
 
     use_threads = _thread_policy(parallel, nlag, n_MC)
     pcf, stderr, eig_val = if use_threads
-        _pair_correlation_threaded(cpp, rs, n_MC, rng)
+        _pair_correlation_threaded(rng, cpp, rs, n_MC)
     else
-        _pair_correlation_serial(cpp, rs, n_MC, rng)
+        _pair_correlation_serial(rng, cpp, rs, n_MC)
     end
 
     return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, eig_val=eig_val, n_MC=n_MC)
 end
 
-@inline function _validate_parallel(parallel::Symbol)
+function pair_correlation_function(
+    cpp::CriticalPointProcess, rs::AbstractVector{<:Real}; kwargs...
+)
+    return pair_correlation_function(default_rng(), cpp, rs; kwargs...)
+end
+
+@inline function _check_parallel(parallel::Symbol)
     (parallel == :auto || parallel == :serial || parallel == :threads) ||
         throw(ArgumentError("parallel must be :auto, :serial, or :threads"))
     return parallel
 end
 
-@inline function _validate_nMC(n_MC::Integer)
+@inline function _check_nMC(n_MC::Integer)
     n_MC > 0 || throw(DomainError(n_MC, "n_MC must be positive"))
     return n_MC
 end
@@ -80,7 +85,7 @@ function _thread_policy(parallel::Symbol, nlag::Integer, n_MC::Integer)
 end
 
 function _pair_correlation_serial(
-    cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer, rng::AbstractRNG
+    rng::AbstractRNG, cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer
 )
     D = dimension(cpp)
     nlag = length(rs)
@@ -91,15 +96,15 @@ function _pair_correlation_serial(
     eig_val = Vector{Tuple{Int,Float64}}(undef, nlag)
     N01 = randn(rng, 2dd, n_MC)
 
-    for i in ProgressBar(eachindex(rs))
-        pcf[i], stderr[i], eig_val[i] = _pair_correlation_single(cpp, rs[i], N01)
+    pcf, stderr, eig_val = map(rs) do r
+        _pair_correlation_single(cpp, r, N01)
     end
 
     return pcf, stderr, eig_val
 end
 
 function _pair_correlation_threaded(
-    cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer, rng::AbstractRNG
+    rng::AbstractRNG, cpp::CriticalPointProcess, rs::AbstractVector{<:Real}, n_MC::Integer
 )
     D = dimension(cpp)
     nlag = length(rs)
@@ -170,7 +175,7 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     # stderr *= 1.959964 / sqrt(n_MC) # uncomment if testing compliance with R code
 
     return (pcf, stderr, eig_val)
-    # return (pcf, stderr, ξ) # uncomment if testing compliance with R code
+    # return (pcf, stderr, ξ) # uncomment (and comment previous line) if testing compliance with R code
 end
 
 """
@@ -200,7 +205,7 @@ function argument_of_expectation(::MaxCritical, ξ0::AbstractVector, ξr::Abstra
     ismax = (tmp0 < 0) && (tmpr < 0) # if true, the point is a local maximum candidate
     ismin = (tmp0 > 0) && (tmpr > 0) # if true, the point is a local minimum candidate
     # a local minimum corresponds to a positive definite Hessian
-    # i.e. all leading principal minors are positive
+    # i.e. all leading principal minors are positive (Sylvester's criterion)
     while ismin && m < d
         m += 1
         tmp0 = det_minor(ξ0, m)
@@ -217,9 +222,10 @@ function argument_of_expectation(::MaxCritical, ξ0::AbstractVector, ξr::Abstra
     end
 
     if ismax || ismin
+        # In that branch, tmp0 = det_minor(ξ0, d) and tmpr = det_minor(ξr, d) 
+        return 0.5 * abs(tmp0) * abs(tmpr)
         # By symmetry, the quantity for local maxima is the half of 
         # the quantity for all extrema
-        return 0.5 * abs(det_minor(ξ0, d)) * abs(det_minor(ξr, d))
     else
         return 0.0
     end

@@ -371,11 +371,12 @@ g.test <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
   # close(pb)
   if (do.parallel) stopCluster(cluster) 
   test=sum(apply(!is.na(eig.val.mat),2,sum))>0
-  if (test){
-    eig.val=c(sum(eig.val.mat[,1],na.rm=TRUE),
-              min(eig.val.mat[,2],na.rm=TRUE),
-              mean(vecr[!is.na(eig.val.mat[,1])]))
-  } else eig.val=c(NA,NA,NA)
+  # if (test){
+  #   eig.val=c(sum(eig.val.mat[,1],na.rm=TRUE),
+  #             min(eig.val.mat[,2],na.rm=TRUE),
+  #             mean(vecr[!is.na(eig.val.mat[,1])]))
+  # } else eig.val=c(NA,NA,NA)
+  eig.val=c(NA,NA,NA)
   list(out=out,eig.val=eig.val)
   
 }
