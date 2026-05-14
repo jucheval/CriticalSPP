@@ -239,8 +239,11 @@ densGrX0Xre1 <- function(r,phi, d=2,which.cov="Gaussian",nu=NULL){
   dmvnorm(x =rep(0,2*d), mean= rep(0,2*d), sigma = covGrX0GrXt)
 }
 
-g <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
-              which.crit = "max",B=1e4,do.parallel=FALSE,nu=NULL){
+g.test <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
+              which.crit = "max",B=1e4,do.parallel=FALSE,nu=NULL,V){
+  ### The function has been modified to allow for the use of pre-generated Gaussian vectors V
+  ### It is necessary to check compliance with Julia code 
+  ### because the eigen decomposition is not the same in R and Julia
   ### --------------------------------------------------------------------------------------------
   ### Monte-Carlo approximation of the pair correlation function g(r) for different values 
   ### of r
@@ -296,9 +299,9 @@ g <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
     out
   }
   
-  pb <- txtProgressBar(min = 1, max = lr, style = 3)
+  # pb <- txtProgressBar(min = 1, max = lr, style = 3)
   dd=d+d*(d-1)/2 ## Dimension of Hessian matrices
-  N01=matrix(rnorm(B*2*dd),nr=2*dd,nc=B) # Generations of N(0,1) identical for all r's 
+  # N01=matrix(rnorm(B*2*dd),nr=2*dd,nc=B) # Generations of N(0,1) identical for all r's 
   if (do.parallel){
     totalCores = detectCores()
     cat('totalCores=',totalCores,'\n')
@@ -307,7 +310,7 @@ g <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
   }
   eig.val.mat=NULL
   for (i in 1:lr) {
-    setTxtProgressBar(pb, i)
+    # setTxtProgressBar(pb, i)
     r=vecr[i]
     S=SigmaNablaX0Xre1(r=r,phi=phi,d=d,which.cov=which.cov,nu=nu)
     eigS=eigen(S);D=matrix(0,nrow(S),ncol(S));
@@ -317,7 +320,7 @@ g <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
     } else eig.val=c(NA,NA)
     eig.val.mat=rbind(eig.val.mat,eig.val)
     diag(D)=sqrt(pmax(0,eigS.val) );P=eigS$vectors
-    V=t(P%*%D%*%N01) # A (B,2*dd) matrix of N(0,S) replications
+    # V=t(P%*%D%*%N01) # A (B,2*dd) matrix of N(0,S) replications
     #tL=t(chol(S))
     #V=t( tL%*%N01)  
     V0=as.matrix(V[,1:dd])    # Inverse symmetric vectorization of Hessians of X(0)
@@ -365,18 +368,18 @@ g <- function(vecr,rho,phi=NULL, d=2,which.cov="Gaussian",
   precision <- qnorm(0.975)*sd.pcfs/sqrt(B)
   out[,i]<-c(m.pcfs,precision)
   }
-  close(pb)
+  # close(pb)
   if (do.parallel) stopCluster(cluster) 
   test=sum(apply(!is.na(eig.val.mat),2,sum))>0
-  if (test){
-    eig.val=c(sum(eig.val.mat[,1],na.rm=TRUE),
-              min(eig.val.mat[,2],na.rm=TRUE),
-              mean(vecr[!is.na(eig.val.mat[,1])]))
-  } else eig.val=c(NA,NA,NA)
+  # if (test){
+  #   eig.val=c(sum(eig.val.mat[,1],na.rm=TRUE),
+  #             min(eig.val.mat[,2],na.rm=TRUE),
+  #             mean(vecr[!is.na(eig.val.mat[,1])]))
+  # } else eig.val=c(NA,NA,NA)
+  eig.val=c(NA,NA,NA)
   list(out=out,eig.val=eig.val)
   
 }
-
 
 #############################################################################
 ######### unessential/auxiliary functions
