@@ -21,7 +21,7 @@ function pair_correlation_function(
     rs::AbstractVector{<:Real};
     n_MC::Integer=100_000,
     parallel::Symbol=:auto,
-    progressbar::Bool=true,
+    show_progress::Bool=true,
 )
     _check_nMC(n_MC)
     _check_parallel(parallel)
@@ -33,9 +33,9 @@ function pair_correlation_function(
 
     use_threads = _thread_policy(parallel, nlag, n_MC)
     pcf, stderr = if use_threads
-        _pair_correlation_threaded(rng, cpp, rs, n_MC, progressbar)
+        _pair_correlation_threaded(rng, cpp, rs, n_MC, show_progress)
     else
-        _pair_correlation_serial(rng, cpp, rs, n_MC, progressbar)
+        _pair_correlation_serial(rng, cpp, rs, n_MC, show_progress)
     end
 
     return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, n_MC=n_MC)
@@ -84,19 +84,20 @@ function _pair_correlation_serial(
     cpp::CriticalPointProcess,
     rs::AbstractVector{<:Real},
     n_MC::Integer,
-    progressbar::Bool,
+    show_progress::Bool,
 )
     D = dimension(cpp)
     nlag = length(rs)
     dd = D + D * (D - 1) ÷ 2
 
-    pcf = Vector{Float64}(undef, nlag)
-    stderr = Vector{Float64}(undef, nlag)
+    pcf = similar(rs, Float64)
+    stderr = similar(rs, Float64)
     N01 = randn(rng, 2dd, n_MC)
 
-    iterator = progressbar ? ProgressBar(eachindex(rs)) : eachindex(rs)
-    for i in iterator
+    p = Progress(nlag; enabled=show_progress)
+    for i in eachindex(rs)
         pcf[i], stderr[i] = _pair_correlation_single(cpp, rs[i], N01)
+        next!(p)
     end
 
     return pcf, stderr
@@ -107,19 +108,20 @@ function _pair_correlation_threaded(
     cpp::CriticalPointProcess,
     rs::AbstractVector{<:Real},
     n_MC::Integer,
-    progressbar::Bool,
+    show_progress::Bool,
 )
     D = dimension(cpp)
     nlag = length(rs)
     dd = D + D * (D - 1) ÷ 2
 
-    pcf = Vector{Float64}(undef, nlag)
-    stderr = Vector{Float64}(undef, nlag)
+    pcf = similar(rs, Float64)
+    stderr = similar(rs, Float64)
     N01 = randn(rng, 2dd, n_MC)
 
-    iterator = progressbar ? ProgressBar(eachindex(rs)) : eachindex(rs)
-    Threads.@threads for i in iterator
+    p = Progress(nlag; enabled=show_progress)
+    Threads.@threads for i in eachindex(rs)
         pcf[i], stderr[i] = _pair_correlation_single(cpp, rs[i], N01)
+        next!(p)
     end
 
     return pcf, stderr

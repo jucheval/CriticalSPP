@@ -5,7 +5,7 @@ using Roots: find_zero
 using LinearAlgebra: Symmetric, Diagonal, diagind, diagm, eigen
 using Distributions: MvNormal, pdf
 using Random: AbstractRNG, default_rng, randn
-using ProgressBars: ProgressBar
+using ProgressMeter: Progress, next!
 using StatsBase: mean
 
 # Covariances
