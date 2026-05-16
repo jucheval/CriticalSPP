@@ -94,8 +94,9 @@ function _pair_correlation_serial(
     stderr = Vector{Float64}(undef, nlag)
     N01 = randn(rng, 2dd, n_MC)
 
-    pcf, stderr = map(rs) do r
-        _pair_correlation_single(cpp, r, N01)
+    iterator = progressbar ? ProgressBar(eachindex(rs)) : eachindex(rs)
+    for i in iterator
+        pcf[i], stderr[i] = _pair_correlation_single(cpp, rs[i], N01)
     end
 
     return pcf, stderr
