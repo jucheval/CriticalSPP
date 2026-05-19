@@ -33,7 +33,7 @@ function (cov::RWMCovariance)(r)
 
     δ = r * √D / ϕ
     J = besselj(D / 2 - 1, δ)
-    Γ = Bessels.gamma(D / 2)
+    Γ = gamma(D / 2)
 
     return Γ * (δ / 2)^(-(D / 2 - 1)) * J
 end
@@ -51,7 +51,7 @@ function practical_range(cov::RWMCovariance, val)
     return 2ϕ * (val * sqrt(pi))^(-2)
     # expression from the R code
     # delta = D / 2 - 1
-    # 2 * ϕ * (Bessels.gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
+    # 2 * ϕ * (gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
 end
 
 # c₂ derivative
@@ -59,10 +59,10 @@ function c2_derivative(cov::RWMCovariance, s, k::Integer)
     D = dimension(cov)
     ϕ = scale(cov)
 
-    cst = (-1)^k / 2^k / ϕ^(2k) * (D / 2)^k * Bessels.gamma(D / 2)
+    cst = (-1)^k / 2^k / ϕ^(2k) * (D / 2)^k * gamma(D / 2)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst / Bessels.gamma(D / 2 + k)
+    s ≈ 0 && return cst / gamma(D / 2 + k)
 
     α = D / 2 - 1 + k
     δ = √s * √D / ϕ

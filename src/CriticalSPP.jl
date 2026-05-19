@@ -1,6 +1,6 @@
 module CriticalSPP
 
-using Bessels: Bessels, besselk, besselj
+using SpecialFunctions: gamma, besselk, besselj
 using Roots: find_zero
 using LinearAlgebra: Symmetric, Diagonal, diagind, diagm, eigen
 using Distributions: MvNormal, pdf

@@ -36,7 +36,7 @@ function (cov::MaternCovariance)(r)
 
     δ = r * √(2ν) / ϕ
     Β = besselk(ν, δ)
-    Γ = Bessels.gamma(ν)
+    Γ = gamma(ν)
 
     return 2^(1 - ν) / Γ * δ^ν * Β
 end
@@ -58,10 +58,10 @@ function c2_derivative(cov::MaternCovariance, s, k::Integer)
     k < ν ||
         throw(ArgumentError("the order k must be less than the smoothness parameter nu"))
 
-    cst = (-1)^k * 2 / 2^k / ϕ^(2k) * ν^k / Bessels.gamma(ν)
+    cst = (-1)^k * 2 / 2^k / ϕ^(2k) * ν^k / gamma(ν)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst * Bessels.gamma(ν - k) / 2
+    s ≈ 0 && return cst * gamma(ν - k) / 2
 
     δ = √(s) * √(2ν) / ϕ
     return cst * (δ / 2)^(ν - k) * besselk(ν - k, δ)
