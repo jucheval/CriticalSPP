@@ -1,21 +1,18 @@
-using DrWatson
-using Test
-using LinearAlgebra
-using Random: MersenneTwister
-using Logging
-
-@quickactivate # Activate test project environment
-using CriticalSPP
 using Aqua
-using JuliaFormatter
+using CriticalSPP
 using ExplicitImports
+using JuliaFormatter
+using LinearAlgebra
+using Logging
+using Random
+using Test
 
 global_logger(NullLogger()) # used to remove the logging info messages from the test output
 
 # The Pkg manager ]test macro does not work for DrWatson projects
 # We need to include the test files manually
 # For instance, execute the following command in the terminal:
-# julia --project=. --color=yes test/runtests.jl
+# julia --project=test/ --color=yes test/runtests.jl
 
 # Run test suite
 ti = time()

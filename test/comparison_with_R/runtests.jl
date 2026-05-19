@@ -1,16 +1,14 @@
-using DrWatson, Test
 using CriticalSPP
 using LinearAlgebra
-
-@quickactivate # Activate test project environment
 using RCall
+using Test
 
 # Warning: 
 ### two lines of code must be uncommented in src/point/pcf.jl to test compliance with R code. 
 ### They are at the end of the function _pair_correlation_single
 
 # Execute the following command in the terminal:
-# julia --project=. --color=yes test/comparison_with_R/runtests.jl
+# julia --project=test/ --color=yes test/comparison_with_R/runtests.jl
 
 # Run test suite
 ti = time()
@@ -42,6 +40,9 @@ println("----")
 end
 println("----")
 @testset verbose = true "pair_correlation_function" begin
+    # Warning: 
+    ### two lines of code must be uncommented in src/point/pcf.jl to test compliance with R code. 
+    ### They are at the end of the function _pair_correlation_single
     include("pcf.jl")
 end
 println("----")
