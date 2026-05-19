@@ -8,6 +8,7 @@ using Logging
 using CriticalSPP
 using Aqua
 using JuliaFormatter
+using ExplicitImports
 
 global_logger(NullLogger()) # used to remove the logging info messages from the test output
 
@@ -25,7 +26,7 @@ println("----")
 end
 println("----")
 @testset verbose = false "Formatting" begin
-    @test format(CriticalSPP; verbose=true, overwrite=false)
+    @test format(CriticalSPP; overwrite=false)
 end
 println("----")
 ExplicitImports.main(["--test"])
