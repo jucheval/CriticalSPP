@@ -1,10 +1,10 @@
 name = "CriticalSPP"
+uuid = "4719b2ec-7447-58f1-b46c-e71fa1ecfd28"
 authors = ["Julien Chevallier", "Jean François Coeurjolly", "Rasmus Waagepetersen"]
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -12,5 +12,11 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-DrWatson = "2.19.1"
-julia = "1.12.6"
+Bessels = "0.2"
+Distributions = "0.25"
+LinearAlgebra = "1"
+ProgressMeter = "1"
+Random = "1"
+Roots = "3"
+StatsBase = "0.34"
+julia = ">= 1.10"
