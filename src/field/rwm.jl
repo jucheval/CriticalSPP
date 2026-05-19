@@ -24,18 +24,20 @@ end
 RWMCovariance(d::Integer) = RWMCovariance(1.0, d)
 
 # Functor
-function (cov::RWMCovariance)(r)
+function (cov::RWMCovariance{D,T})(r) where {D,T}
     ϕ = scale(cov)
-    D = dimension(cov)
+    twoT = T(2)
+    halfD = T(D) / twoT
 
     # guard r close to 0 to avoid numerical explosion
-    r ≈ 0 && return 1.0
+    r ≈ 0 && return one(T)
 
-    δ = r * √D / ϕ
-    J = besselj(D / 2 - 1, δ)
-    Γ = gamma(D / 2)
+    δ = r * sqrt(T(D)) / ϕ
+    α = halfD - one(T)
+    J = besselj(α, δ)
+    Γ = gamma(halfD)
 
-    return Γ * (δ / 2)^(-(D / 2 - 1)) * J
+    return Γ * (δ / twoT)^(-α) * J
 end
 
 # Practical range (only for d=2, using asymptotic behaviour of J0)
@@ -58,16 +60,20 @@ end
 function c2_derivative(cov::RWMCovariance, s, k::Integer)
     D = dimension(cov)
     ϕ = scale(cov)
+    T = typeof(ϕ)
+    twoT = T(2)
+    halfD = T(D) / twoT
+    kT = T(k)
 
-    cst = (-1)^k / 2^k / ϕ^(2k) * (D / 2)^k * gamma(D / 2)
+    cst = (-one(T))^k / twoT^k / ϕ^(2k) * halfD^k * gamma(halfD)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst / gamma(D / 2 + k)
+    s ≈ 0 && return cst / gamma(halfD + kT)
 
-    α = D / 2 - 1 + k
-    δ = √s * √D / ϕ
+    α = halfD - one(T) + kT
+    δ = sqrt(s) * sqrt(T(D)) / ϕ
 
-    return cst * (δ / 2)^(-α) * besselj(α, δ)
+    return cst * (δ / twoT)^(-α) * besselj(α, δ)
 end
 
 # Spectral moment

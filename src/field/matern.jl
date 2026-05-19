@@ -27,18 +27,19 @@ MaternCovariance(nu::T, d::Integer) where {T<:Real} = MaternCovariance(1.0, nu, 
 
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl
-function (cov::MaternCovariance)(r)
+function (cov::MaternCovariance{D,T})(r) where {D,T}
     ν = cov.nu
     ϕ = scale(cov)
+    twoT = T(2)
 
     # guard r close to 0 to avoid numerical explosion
-    r ≈ 0 && return 1.0
+    r ≈ 0 && return one(T)
 
-    δ = r * √(2ν) / ϕ
+    δ = r * sqrt(twoT * ν) / ϕ
     Β = besselk(ν, δ)
     Γ = gamma(ν)
 
-    return 2^(1 - ν) / Γ * δ^ν * Β
+    return twoT^(one(T) - ν) / Γ * δ^ν * Β
 end
 
 # Practical range
@@ -55,16 +56,18 @@ end
 function c2_derivative(cov::MaternCovariance, s, k::Integer)
     ν = cov.nu
     ϕ = scale(cov)
+    T = typeof(ϕ)
+    twoT = T(2)
     k < ν ||
         throw(ArgumentError("the order k must be less than the smoothness parameter nu"))
 
-    cst = (-1)^k * 2 / 2^k / ϕ^(2k) * ν^k / gamma(ν)
+    cst = (-one(T))^k * twoT / twoT^k / ϕ^(2k) * ν^k / gamma(ν)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst * gamma(ν - k) / 2
+    s ≈ 0 && return cst * gamma(ν - T(k)) / twoT
 
-    δ = √(s) * √(2ν) / ϕ
-    return cst * (δ / 2)^(ν - k) * besselk(ν - k, δ)
+    δ = sqrt(s) * sqrt(twoT * ν) / ϕ
+    return cst * (δ / twoT)^(ν - T(k)) * besselk(ν - T(k), δ)
 end
 
 # Spectral moment
