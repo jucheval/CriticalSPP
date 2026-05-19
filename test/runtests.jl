@@ -1,8 +1,13 @@
-using DrWatson, Test
-using CriticalSPP
+using DrWatson
+using Test
 using LinearAlgebra
 using Random: MersenneTwister
 using Logging
+
+@quickactivate # Activate test project environment
+using CriticalSPP
+using Aqua
+using JuliaFormatter
 
 global_logger(NullLogger()) # used to remove the logging info messages from the test output
 
@@ -14,6 +19,16 @@ global_logger(NullLogger()) # used to remove the logging info messages from the 
 # Run test suite
 ti = time()
 println("Starting tests")
+println("----")
+@testset verbose = false "Code quality (Aqua.jl)" begin
+    Aqua.test_all(CriticalSPP)
+end
+println("----")
+@testset verbose = false "Formatting" begin
+    @test format(CriticalSPP; verbose=true, overwrite=false)
+end
+println("----")
+ExplicitImports.main(["--test"])
 println("----")
 @testset verbose = true "Spectral moments (numerical and closed-form compliance)" begin
     include("spectral_moment.jl")
