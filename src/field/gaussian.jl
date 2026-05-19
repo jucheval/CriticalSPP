@@ -53,5 +53,5 @@ end
 
 # Internals
 function constant_λ₄_over_3λ₂(::GaussianCovariance)
-    return 1.0
+    return 1
 end

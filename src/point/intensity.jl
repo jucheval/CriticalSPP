@@ -7,11 +7,12 @@ function intensity(cpp::CriticalPointProcess)
     cov = covariance(cpp)
     d = dimension(cov)
     type = critical_type(cpp)
+    T = typeof(scale(cov))
 
     λ₂ = spectral_moment(cov, 1)
     λ₄ = spectral_moment(cov, 2)
-    cst = INTENSITY_CONSTANT_DICT[(d, type)]
-    return cst * (λ₄ / (3 * λ₂))^(d / 2)
+    cst = convert(T, INTENSITY_CONSTANT_DICT[(d, type)])
+    return cst * (λ₄ / (T(3) * λ₂))^(T(d) / T(2))
 end
 
 """
@@ -26,14 +27,16 @@ function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     rho > 0 || throw(DomainError(rho, "intensity rho must be positive"))
 
     cov = covariance(cpp)
-    K = constant_λ₄_over_3λ₂(cov)
+    T = typeof(scale(cov))
+    ρ = convert(T, rho)
+    K = convert(T, constant_λ₄_over_3λ₂(cov))
 
     type = critical_type(cpp)
     D = dimension(cov)
 
-    cst = INTENSITY_CONSTANT_DICT[(D, type)]
+    cst = convert(T, INTENSITY_CONSTANT_DICT[(D, type)])
 
-    return √K * (cst / rho)^(1 / D)
+    return √K * (cst / ρ)^(inv(T(D)))
 end
 
 # Internals

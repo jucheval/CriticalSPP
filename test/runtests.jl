@@ -52,6 +52,10 @@ println("----")
     include("helper_MC.jl")
 end
 println("----")
+@testset verbose = true "Type parameter preservation" begin
+    include("type_parameters.jl")
+end
+println("----")
 # FIXME: all tests in this @testset fail on GitHub but pass locally.
 # It must be (at least) the eigen decomposition
 # @testset verbose = true "Pair correlation function" begin 

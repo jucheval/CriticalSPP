@@ -80,5 +80,5 @@ end
 # Internals
 function constant_λ₄_over_3λ₂(cov::RWMCovariance)
     D = dimension(cov)
-    return D / (D + 2)
+    return D//(D + 2)
 end
