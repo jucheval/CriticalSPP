@@ -1,12 +1,12 @@
 module CriticalSPP
 
-using Bessels: gamma, besselk, besselj
+using Bessels: Bessels, besselk, besselj
 using Roots: find_zero
 using LinearAlgebra: Symmetric, Diagonal, diagind, diagm, eigen
 using Distributions: MvNormal, pdf
-using Random: AbstractRNG, default_rng, randn
+using Random: AbstractRNG, default_rng
+using Base: randn
 using ProgressMeter: Progress, next!
-using StatsBase: mean
 
 # Covariances
 export CovarianceSPP
