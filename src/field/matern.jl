@@ -27,23 +27,31 @@ MaternCovariance(nu::T, d::Integer) where {T<:Real} = MaternCovariance(1.0, nu, 
 
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl
-function (cov::MaternCovariance{D,T})(r) where {D,T}
+# TODO: make convert functions so that this one is an interface
+function (cov::MaternCovariance{D,T})(r::S) where {D,T,S}
+    R = promote_type(T, S)
+    return MaternCovariance{D,R}(cov.phi, cov.nu)(R(r))
+end
+function (cov::MaternCovariance{D,T})(r::T) where {D,T}
     ν = cov.nu
     ϕ = scale(cov)
-    twoT = T(2)
 
     # guard r close to 0 to avoid numerical explosion
     r ≈ 0 && return one(T)
 
-    δ = r * sqrt(twoT * ν) / ϕ
+    δ = r * √(2 * ν) / ϕ
     Β = besselk(ν, δ)
     Γ = gamma(ν)
 
-    return twoT^(one(T) - ν) / Γ * δ^ν * Β
+    return 2^(1 - ν) / Γ * δ^ν * Β
 end
 
 # Practical range
-function practical_range(cov::MaternCovariance, val)
+function practical_range(cov::MaternCovariance{D,T}, val::S) where {D,T,S}
+    R = promote_type(T, S)
+    return practical_range(MaternCovariance{D,R}(cov.phi, cov.nu), R(val))
+end
+function practical_range(cov::MaternCovariance{D,T}, val::T) where {D,T}
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
 
     initial_guess = practical_range(GaussianCovariance(scale(cov), dimension(cov)), val)
@@ -53,21 +61,25 @@ function practical_range(cov::MaternCovariance, val)
 end
 
 # c₂ derivative
-function c2_derivative(cov::MaternCovariance, s, k::Integer)
+# TODO first !!!!!!!!!!     COMMIT      !!!!!!!
+# TODO: make convert functions so that this one is an interface
+function c2_derivative(cov::MaternCovariance{D,T}, s::S, k::Integer) where {D,T,S}
+    R = promote_type(T, S)
+    return c2_derivative(MaternCovariance{D,R}(cov.phi, cov.nu), R(s), k)
+end
+function c2_derivative(cov::MaternCovariance{D,T}, s::T, k::Integer) where {D,T}
     ν = cov.nu
     ϕ = scale(cov)
-    T = typeof(ϕ)
-    twoT = T(2)
     k < ν ||
         throw(ArgumentError("the order k must be less than the smoothness parameter nu"))
 
-    cst = (-one(T))^k * twoT / twoT^k / ϕ^(2k) * ν^k / gamma(ν)
+    cst = (-one(T))^k * 2 / 2^k / ϕ^(2k) * ν^k / gamma(ν)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst * gamma(ν - T(k)) / twoT
+    s ≈ 0 && return cst * gamma(ν - T(k)) / 2
 
-    δ = sqrt(s) * sqrt(twoT * ν) / ϕ
-    return cst * (δ / twoT)^(ν - T(k)) * besselk(ν - T(k), δ)
+    δ = √s * √(2 * ν) / ϕ
+    return cst * (δ / 2)^(ν - k) * besselk(ν - k, δ)
 end
 
 # Spectral moment

@@ -50,26 +50,28 @@ end
 end
 
 @testset "Covariance functors" begin
-    for T in (Float32, Float64), D in 1:4
+    for T in (Float32, Float64), S in (Float32, Float64), D in 1:4
         phi = T(1.2)
-        r1 = T(0.8)
-        r2 = T(0.0)
+        r1 = S(0.8)
+        r2 = S(0.0)
+        R = promote_type(T, S)
 
         g = GaussianCovariance(phi, D)
-        @test g(r1) isa T
-        @test g(r2) isa T
+        @test g(r1) isa R
+        @test g(r2) isa R
 
         nu = T(2.5)
         m = MaternCovariance(phi, nu, D)
-        @test m(r1) isa T
-        @test m(r2) isa T
+        @test m(r1) isa R
+        @test m(r2) isa R
 
         rwm = RWMCovariance(phi, D)
-        @test rwm(r1) isa T
-        @test rwm(r2) isa T
+        @test rwm(r1) isa R
+        @test rwm(r2) isa R
     end
 
     # SpecialFunctions does not currently support BigFloat for Bessel functions
+    # TODO: add a try-catch to test the BigFloat case when the support is added in SpecialFunctions
     for D in 1:4
         phi = BigFloat(1.2)
         r = BigFloat(0.8)
@@ -79,28 +81,29 @@ end
 end
 
 @testset "c2_derivative" begin
-    for T in (Float32, Float64), D in 1:4
+    for T in (Float32, Float64), S in (Float32, Float64), D in 1:4
         phi = T(1.1)
-        s1 = T(0.5)
-        s2 = T(0.0)
+        s1 = S(0.5)
+        s2 = S(0.0)
+        R = promote_type(T, S)
 
         g = GaussianCovariance(phi, D)
         for k in 1:3
-            @test c2_derivative(g, s1, k) isa T
-            @test c2_derivative(g, s2, k) isa T
+            @test c2_derivative(g, s1, k) isa R
+            @test c2_derivative(g, s2, k) isa R
         end
 
         nu = T(3.5)
         m = MaternCovariance(phi, nu, D)
         for k in 1:(Int(floor(nu)) - 1)
-            @test c2_derivative(m, s1, k) isa T
-            @test c2_derivative(m, s2, k) isa T
+            @test c2_derivative(m, s1, k) isa R
+            @test c2_derivative(m, s2, k) isa R
         end
 
         rwm = RWMCovariance(phi, D)
         for k in 1:2
-            @test c2_derivative(rwm, s1, k) isa T
-            @test c2_derivative(rwm, s2, k) isa T
+            @test c2_derivative(rwm, s1, k) isa R
+            @test c2_derivative(rwm, s2, k) isa R
         end
     end
 
@@ -150,14 +153,53 @@ end
     end
 end
 
+@testset "practical_range" begin
+    for T in (Float32, Float64), S in (Float32, Float64), D in 1:4
+        phi = T(1.2)
+        val = S(0.5)
+        R = promote_type(T, S)
+
+        g = GaussianCovariance(phi, D)
+        @test practical_range(g, val) isa R
+
+        nu = T(2.5)
+        m = MaternCovariance(phi, nu, D)
+        @test practical_range(m, val) isa R
+
+        # TODO: uncomment when practical_range is implemented for RWMCovariance
+        # rwm = RWMCovariance(phi, D)
+        # @test practical_range(rwm, val) isa R
+    end
+
+    for D in 1:4
+        phi = BigFloat(1.2)
+        val = BigFloat(0.5)
+        g = GaussianCovariance(phi, D)
+        @test practical_range(g, val) isa BigFloat
+    end
+end
+
 @testset "covariance_hessians_x0_xr" begin
-    for T in (Float32, Float64), D in 1:2
+    for T in (Float32, Float64, BigFloat), S in (Float32, Float64, BigFloat), D in 1:2
         phi = T(1.4)
-        r = T(0.5)
+        r = S(0.5)
+        R = promote_type(T, S)
 
         cov = GaussianCovariance(phi, D)
 
         Σ = CriticalSPP.covariance_hessians_x0_xr(cov, r)
-        @test eltype(Σ) == T
+        @test eltype(Σ) == R
+    end
+end
+
+@testset "density_vr" begin
+    for T in (Float32, Float64, BigFloat), S in (Float32, Float64, BigFloat), D in 1:2
+        phi = T(1.4)
+        r = S(0.5)
+        R = promote_type(T, S)
+
+        cov = GaussianCovariance(phi, D)
+
+        @test CriticalSPP.density_vr(cov, r) isa R
     end
 end

@@ -465,7 +465,7 @@ gammad=function(d,B=1e4){
 
 
 
-## TODO
+## todo
 K <- function(vecr, rho, phi=NULL, n=10000, choice = "max"){
   ## right now only for d=2
   tmp <- g(vecr=vecr,rho=rho,phi=phi,d=d,which.cov=which.cov,

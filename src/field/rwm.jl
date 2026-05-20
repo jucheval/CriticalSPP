@@ -24,25 +24,30 @@ end
 RWMCovariance(d::Integer) = RWMCovariance(1.0, d)
 
 # Functor
-function (cov::RWMCovariance{D,T})(r) where {D,T}
+# TODO: make convert functions so that this one is an interface
+function (cov::RWMCovariance{D,T})(r::S) where {D,T,S}
+    R = promote_type(T, S)
+    return RWMCovariance{D,R}(cov.phi)(R(r))
+end
+function (cov::RWMCovariance{D,T})(r::T) where {D,T}
     ϕ = scale(cov)
-    twoT = T(2)
-    halfD = T(D) / twoT
+    d = T(D)
 
     # guard r close to 0 to avoid numerical explosion
     r ≈ 0 && return one(T)
 
-    δ = r * sqrt(T(D)) / ϕ
-    α = halfD - one(T)
+    δ = r * sqrt(d) / ϕ
+    α = d / 2 - one(T)
     J = besselj(α, δ)
-    Γ = gamma(halfD)
+    Γ = gamma(d / 2)
 
-    return Γ * (δ / twoT)^(-α) * J
+    return Γ * (δ / 2)^(-α) * J
 end
 
 # Practical range (only for d=2, using asymptotic behaviour of J0)
 # FIXME: currently it does not satisfy cov(practical_range(cov, val)) ≈ val
 # implement numerical root finding?
+# Copy matern.jl regrading the type preservation
 function practical_range(cov::RWMCovariance, val)
     ϕ = scale(cov)
     D = dimension(cov)
@@ -57,23 +62,24 @@ function practical_range(cov::RWMCovariance, val)
 end
 
 # c₂ derivative
-function c2_derivative(cov::RWMCovariance, s, k::Integer)
-    D = dimension(cov)
+# TODO: make convert functions so that this one is an interface
+function c2_derivative(cov::RWMCovariance{D,T}, s::S, k::Integer) where {D,T,S}
+    R = promote_type(T, S)
+    return c2_derivative(RWMCovariance{D,R}(cov.phi), R(s), k)
+end
+function c2_derivative(cov::RWMCovariance{D,T}, s::T, k::Integer) where {D,T}
     ϕ = scale(cov)
-    T = typeof(ϕ)
-    twoT = T(2)
-    halfD = T(D) / twoT
-    kT = T(k)
+    d = T(D)
 
-    cst = (-one(T))^k / twoT^k / ϕ^(2k) * halfD^k * gamma(halfD)
+    cst = (-one(T))^k / 2^k / ϕ^(2k) * (d / 2)^k * gamma(d / 2)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst / gamma(halfD + kT)
+    s ≈ 0 && return cst / gamma(d / 2 + k)
 
-    α = halfD - one(T) + kT
-    δ = sqrt(s) * sqrt(T(D)) / ϕ
+    α = d / 2 - one(T) + k
+    δ = √s * √d / ϕ
 
-    return cst * (δ / twoT)^(-α) * besselj(α, δ)
+    return cst * (δ / 2)^(-α) * besselj(α, δ)
 end
 
 # Spectral moment
