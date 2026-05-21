@@ -80,6 +80,12 @@ Return the dimension of the critical Point Process `cpp`, which is the same as t
 """
 dimension(cpp::CriticalPointProcess) = dimension(covariance(cpp))
 
+function convert_innertype(::Type{S}, cpp::CriticalPointProcess) where {S<:Real}
+    cov = covariance(cpp)
+    type = critical_type(cpp)
+    return CriticalPointProcess(convert_innertype(S, cov), type)
+end
+
 #-----------------
 # IMPLEMENTATIONS
 #-----------------

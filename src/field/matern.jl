@@ -25,6 +25,11 @@ end
 
 MaternCovariance(nu::T, d::Integer) where {T<:Real} = MaternCovariance(1.0, nu, d)
 
+# Convert
+function _convert_innertype(::Type{S}, cov::MaternCovariance{D,T}) where {D,T,S<:Real}
+    return MaternCovariance{D,S}(S(cov.phi), S(cov.nu))
+end
+
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl
 # TODO: make convert functions so that this one is an interface

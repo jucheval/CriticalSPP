@@ -20,10 +20,14 @@ Return the scale parameter `phi` of the covariance model `cov`.
 """
 scale(cov::CovarianceSPP) = cov.phi
 
-# Helper function to check that the dimension of the covariance model is less than 4
+# Helper functions
 @inline function _check_dimension(::Val{D}) where {D}
     (1 <= D <= 4) || throw(DomainError(D, "dimension D must satisfy 1 <= D <= 4"))
     return D
+end
+
+function convert_innertype(::Type{S}, cov::CovarianceSPP{D,T}) where {D,T,S<:Real}
+    return _convert_innertype(S, cov)
 end
 
 # Quantities derived from the covariance function

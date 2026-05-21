@@ -23,6 +23,11 @@ end
 
 RWMCovariance(d::Integer) = RWMCovariance(1.0, d)
 
+# Convert
+function _convert_innertype(::Type{S}, cov::RWMCovariance{D,T}) where {D,T,S<:Real}
+    return RWMCovariance{D,S}(S(cov.phi))
+end
+
 # Functor
 # TODO: make convert functions so that this one is an interface
 function (cov::RWMCovariance{D,T})(r::S) where {D,T,S}

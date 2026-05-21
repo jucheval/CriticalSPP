@@ -23,6 +23,11 @@ end
 
 GaussianCovariance(d::Integer) = GaussianCovariance(1.0, d)
 
+# Convert
+function _convert_innertype(::Type{S}, cov::GaussianCovariance{D,T}) where {D,T,S<:Real}
+    return GaussianCovariance{D,S}(S(cov.phi))
+end
+
 # Functor
 function (cov::GaussianCovariance)(r)
     ϕ = scale(cov)
