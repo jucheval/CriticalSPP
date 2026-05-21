@@ -34,7 +34,7 @@ struct CriticalPointProcess{C<:CovarianceSPP,CT<:AbstractCriticalType}
 end
 
 function CriticalPointProcess(
-    cov::C, ::CT=MAX_CRITICAL
+    cov::C, (::CT)=MAX_CRITICAL
 ) where {C<:CovarianceSPP,CT<:AbstractCriticalType}
     return CriticalPointProcess{C,CT}(cov)
 end
@@ -60,8 +60,11 @@ end
 
 Return the type of critical points considered in the critical spatial point process `cpp`.
 """
-critical_type(::CriticalPointProcess{<:CovarianceSPP,CT}) where {CT<:AbstractCriticalType} =
-    CT()
+function critical_type(
+    ::CriticalPointProcess{<:CovarianceSPP,CT}
+) where {CT<:AbstractCriticalType}
+    return CT()
+end
 
 """
     covariance(cpp)
