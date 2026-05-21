@@ -5,15 +5,39 @@ Estimate the pair correlation function of the critical point process `cpp` at
 lags `rs` with Monte Carlo using the random number generator `rng`.
 
 # Arguments
+- `rng::AbstractRNG`: random number generator.
 - `cpp::CriticalPointProcess`: critical point process model.
-- `rs::AbstractVector{<:Real}`: vector of lags.
+- `rs::AbstractVector{<:Real}`: lags where the function is estimated.
 
-# Keyword Arguments
+# Keywords
 - `n_MC::Integer=100_000`: number of Monte Carlo replications per lag.
 - `parallel::Symbol=:auto`: execution policy, one of `:auto`, `:serial`, `:threads`.
+- `show_progress::Bool=true`: show progress bar.
 
 # Returns
 - `NamedTuple`: fields `rs`, `pcf`, `stderr`, `n_MC`.
+
+# Notes
+- `pcf` is the Monte Carlo estimation.
+- `stderr` is the Monte Carlo standard deviation estimate of the estimator (not a confidence interval width).
+- The number of threads is determined by the `JULIA_NUM_THREADS` environment variable (see https://docs.julialang.org/en/v1/manual/multi-threading/)
+- Threaded execution can lead to small numerical differences versus serial mode.
+
+### Examples
+```jldoctest
+julia> using Random
+
+julia> rng = MersenneTwister(42);
+
+julia> cpp = CriticalPointProcess(GaussianCovariance(1.0, 2), MAX_CRITICAL);
+
+julia> out = pair_correlation_function(rng, cpp, [1.0, 2.0]; n_MC=1000, parallel=:serial, show_progress=false);
+
+julia> out.pcf
+2-element Vector{Float64}:
+ 0.07345406896204186
+ 0.845105195553286
+```
 """
 function pair_correlation_function(
     rng::AbstractRNG,
@@ -131,6 +155,14 @@ end
     _pair_correlation_single(cpp, r, N01)
 
 Return g(`r`) estimated by Monte Carlo (and its standard error) for a single lag `r`. `N01` is a pre-generated matrix with i.i.d. N(0,1) entries used for the Monte Carlo estimation. It has dimensions `(2D', n_MC)` where `D' = D + D*(D-1)/2` is the dimension of the vectorised Hessian.
+
+# Arguments
+- `cpp::CriticalPointProcess`: critical point process model.
+- `r::Real`: single lag.
+- `N01::AbstractMatrix`: standard normal samples of shape `(2D', n_MC)`.
+
+# Returns
+- `(pcf, stderr)`: Monte Carlo estimate and associated standard deviation estimate.
 """
 function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::AbstractMatrix)
     D = dimension(cpp)
@@ -187,6 +219,14 @@ end
     argument_of_expectation(<:AbstractCriticalType, ξ0, ξr, d)
 
 Compute the argument of the expectation in Eq (35) of Azaïs & Delmas (2022) for the given type of critical points, where `ξ0` and `ξr` represent the Hessians ∇²X(0) and ∇²X(t) in the vectorised form used in Lemma 8 of Azaïs & Delmas (2022). The dimension `d` is passed to avoid recomputing it from the vector length.
+
+# Arguments
+- `<:AbstractCriticalType`: type of critical points (MAX_CRITICAL or ALL_CRITICAL).
+- `ξ0::AbstractVector`, `ξr::AbstractVector`: vectorized Hessians at two locations.
+- `d::Integer`: field dimension.
+
+# Returns
+- `Real`: integrand value used in Monte Carlo estimation.
 """
 function argument_of_expectation(
     ::AllCritical, ξ0::AbstractVector, ξr::AbstractVector, d::Integer

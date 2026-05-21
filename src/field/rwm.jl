@@ -8,7 +8,26 @@ c(r) = \\Gamma(d/2) (\\frac{r}{2\\phi'})^{-(d/2-1)} J_{d/2-1}(r / \\phi'), \\qua
 ```
 where ``J_\\nu`` is the Bessel function of the first kind.
 
-The scale parameter `phi` is optional and defaults to 1.0.
+# Arguments
+- `phi::Real=1.0`: scale parameter.
+- `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
+
+# Returns
+- `RWMCovariance`: covariance model instance.
+
+### Examples
+```jldoctest
+julia> cov = RWMCovariance(1.0, 2);
+
+julia> scale(cov)
+1.0
+
+julia> dimension(cov)
+2
+
+julia> cov(0.0)
+1.0
+```
 """
 struct RWMCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T

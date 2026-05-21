@@ -1,7 +1,11 @@
 """
     CovarianceSPP{D,T<:Real}
 
-Common interface for all covariance models used to get a critical spatial point process.
+Common interface for covariance models used to get a critical spatial point process
+
+# Notes
+- `D` is the field dimension.
+- `T` is the scalar type used for covariance parameters and evaluations.
 """
 abstract type CovarianceSPP{D,T<:Real} end
 
@@ -9,19 +13,32 @@ abstract type CovarianceSPP{D,T<:Real} end
 """
     dimension(cov)
 
-Return the dimension `D` of the covariance model `cov`.
+Return the spatial dimension `D` of covariance model `cov`.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+
+# Returns
+- `Int`: model dimension.
 """
 dimension(::CovarianceSPP{D}) where {D} = D
 
 """
-    scale(cov)
+    scale(cov::CovarianceSPP{D,T}) where {D,T} -> T
 
-Return the scale parameter `phi` of the covariance model `cov`.
+Return the scale parameter `phi` of covariance model `cov`.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model with field `phi`.
+
+# Returns
+- `T`: scale parameter.
 """
 scale(cov::CovarianceSPP) = cov.phi
 
 # Helper functions
 @inline function _check_dimension(::Val{D}) where {D}
+    D isa Int || throw(DomainError(typeof(D), "type of D must be Int"))
     (1 <= D <= 4) || throw(DomainError(D, "dimension D must satisfy 1 <= D <= 4"))
     return D
 end
@@ -34,28 +51,74 @@ end
 """
     (cov::CovarianceSPP)(r)
 
-Return the value of the covariance `cov` at lag `r`, i.e. ``c_1(r)``.
+Evaluate covariance function c₁ at lag `r`.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `r::Real`: lag.
+
+# Returns
+- `Real`: covariance value `c_1(r)`.
+
+# Notes
+- The return type is the promoted type between the covariance parameters and `r`.
 """
 function (cov::CovarianceSPP) end
 
 """
     practical_range(cov, val)
 
-Return the practical range of the covariance model `cov` corresponding to the value `val`. More precisely, when `cov` is a decreasing covariance function, the practical range is defined as the distance `r₀` such that `cov(r₀) = val`. Otherwise, the practical range is such that `abs(cov(r)) <= val == true` for all `r >= r₀`.
+Return a practical range `r₀` such that covariance values beyond `r₀` are below
+target level `val`.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `val::Real`: target covariance level, typically in `(0, 1)`.
+
+# Returns
+- `Real`: practical range.
+
+# Notes
+- For monotone decreasing models, `r₀` solves `cov(r₀) = val`.
+- For oscillatory models, TODO
+- The return type is the promoted type between the covariance parameters and `val`.
 """
 function practical_range end
 
 """
     c2_derivative(cov, s, k)
 
-Return the `k`-th derivative of the auxiliary covariance function c₂ evaluated at `s = r^2`. More precisely, ``c_2(s) = c_1(\\sqrt{s})`` and `c2_derivative(cov, s, k)` returns ``c_2^{(k)}(s)``.
+Return the `k`-th derivative of auxiliary covariance c₂ at `s`, i.e. `c₂(s) = c₁(√s)`, where `c₁` is the standard covariance function.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `s::Real`: squared lag.
+- `k::Integer`: derivative order.
+
+# Returns
+- `Real`: value of ``c_2^{(k)}(s)``.
+
+# Notes
+- The return type is the promoted type between the covariance parameters and `s`.
 """
 function c2_derivative end
 
 """
     spectral_moment(cov, p, [closedform])
 
-Return the `2p`-th spectral moment of the covariance model `cov`. If `closedform=true` (the default), it uses a closed-form expression. Otherwise, it is computed using `c2_derivative(cov, 0, p)`.
+Return the `2p`-th spectral moment of covariance model `cov`.
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `p::Integer`: moment index.
+- `closedform::Bool`: if `true`, use model-specific closed form; if `false`, compute
+    from `c2_derivative(cov, 0, p)`.
+
+# Returns
+- `Real`: spectral moment of order `2p`.
+
+# Notes
+- The derivative-based path can be numerically unstable for large `p`.
 """
 # FIXME: numerical computation goes out of bounds for large p.
 # To see it, fix prange = 1:15 in test/spectral_moment.jl.

@@ -3,6 +3,13 @@
     covariance_hessians_x0_xr(cov, r)
 
 Return the covariance matrix of the upper diagonal and diagonal of the Hessians ∇²X(0) and ∇²X(`r`e₁) given that ∇X(0) = ∇X(`r`e₁) = 0, where X is a Gaussian field with covariance `cov`. See Lemma 8 in Azaïs & Delmas (2022).
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `r::Real`: lag along first coordinate direction.
+
+# Returns
+- `Symmetric`: covariance matrix of the concatenated vectorized Hessians.
 """
 function covariance_hessians_x0_xr(cov::CovarianceSPP{D,T}, r) where {D,T}
     R = promote_type(T, typeof(r))
@@ -74,7 +81,17 @@ end
 """
     density_vr(cov, r)
 
-Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e_1)), where X is a Gaussian field with covariance `cov`. See proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
+Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e₁)), where X is a Gaussian field with covariance `cov`. See proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
+
+# Arguments
+- `cov::CovarianceSPP`: covariance model.
+- `r::Real`: lag along first coordinate direction.
+
+# Returns
+- `Real`: Gaussian density value at zero for `V(r)`.
+
+# Notes
+- The return type is the promoted type between the covariance parameters and `r`.
 """
 function density_vr(cov::CovarianceSPP{D,T}, r) where {D,T}
     R = promote_type(T, typeof(r))
@@ -103,11 +120,30 @@ function density_vr(cov::CovarianceSPP{D,T}, r) where {D,T}
 end
 
 """
-    det_minor(v, m)
+    det_minor(v, m, d)
 
 Compute the determinant of the m x m minor of a d x d symmetric matrix defined by the entries of `v`, where `v` is a vector of length d + d*(d-1)/2 containing the diagonal and upper diagonal entries of the symmetric matrix. 
 
-*Remark:* `v` does not correspond to the usual vectorization of a symmetric matrix, but rather to the specific layout used in Lemma 8 of Azaïs & Delmas (2022) for the Hessians. The order of entries in `v` is as follows: first the diagonal entries (d of them), then the upper diagonal entries in row-major order (d*(d-1)/2 of them). The minor is defined by the first m rows and columns of the original symmetric matrix.
+# Arguments
+- `v::AbstractVector`: vectorized symmetric matrix with specific layout (see notes below)
+- `m::Integer`: size of leading principal minor.
+- `d::Integer`: full matrix size.
+
+# Returns
+- `Real`: determinant of the leading `m x m` principal minor.
+
+# Notes
+- The layout of `v` is specific to the Hessian representation used in
+    Azaïs and Delmas (2022), not the usual packed symmetric layout.
+- The minor is always taken on the first `m` rows and columns.
+
+### Examples
+```jldoctest
+julia> v = [2.0, 3.0, 1.0]; # corresponds to matrix [2.0 1.0; 1.0 3.0]
+
+julia> CriticalSPP.det_minor(v, 2, 2)
+5.0
+```
 """
 function det_minor(v::AbstractVector, m::Integer, d::Integer)
     if m == 1

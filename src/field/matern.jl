@@ -8,7 +8,27 @@ c(r) = \\frac{2^{1-\\nu}}{\\Gamma(\\nu)} \\left(\\frac{r \\sqrt{2\\nu}}{\\phi}\\
 ```
 where ``K_\\nu`` is the modified Bessel function of the second kind.
 
-The scale parameter `phi` is optional and defaults to 1.0.
+# Arguments
+- `phi::Real=1.0`: scale parameter.
+- `nu::Real`: smoothness parameter.
+- `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
+
+# Returns
+- `MaternCovariance`: covariance model instance.
+
+### Examples
+```jldoctest
+julia> cov = MaternCovariance(1.5, 3.0, 2);
+
+julia> scale(cov)
+1.5
+
+julia> dimension(cov)
+2
+
+julia> cov(0.0)
+1.0
+```
 """
 struct MaternCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -16,6 +36,10 @@ struct MaternCovariance{D,T<:Real} <: CovarianceSPP{D,T}
 end
 
 # Constructor
+function MaternCovariance(phi::Real, nu::Real, d::Integer)
+    T = promote_type(typeof(phi), typeof(nu))
+    return MaternCovariance(T(phi), T(nu), d)
+end
 function MaternCovariance(phi::T, nu::T, d::Integer) where {T<:Real}
     _check_dimension(Val(d))
     phi > zero(T) || throw(DomainError(phi, "phi must be positive"))

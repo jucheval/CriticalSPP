@@ -2,6 +2,20 @@
     intensity(cpp)
 
 Return the intensity of the critical spatial point process `cpp`.
+
+# Arguments
+- `cpp::CriticalPointProcess`: critical point process model.
+
+# Returns
+- `Real`: process intensity.
+
+### Examples
+```jldoctest
+julia> cpp = CriticalPointProcess(GaussianCovariance(1.0, 2), MAX_CRITICAL);
+
+julia> intensity(cpp)
+0.09188814923696535
+```
 """
 function intensity(cpp::CriticalPointProcess)
     cov = covariance(cpp)
@@ -18,10 +32,29 @@ end
 """
     scale_from_intensity(cpp, rho)
 
-Return the scale parameter `phi` corresponding to the intensity `rho` for the critical spatial point process model inferred from `cpp`. 
+Return covariance scale `phi` that matches target intensity `rho` for model `cpp`.
 
-*Remark:*
-The scale parameter of the input underlying covariance `cpp.cov` is not used, but other necessary informations (e.g. type of critical points, dimension and smoothness parameter) are inferred from `cpp`.
+# Arguments
+- `cpp::CriticalPointProcess`: model template defining covariance family and critical type.
+- `rho::Real`: target intensity, must satisfy `rho > 0`.
+
+# Returns
+- `Real`: inferred scale parameter `phi`.
+
+# Notes
+- The scale of the covariance embedded in `cpp` is not used.
+- Other parameters (dimension, critical type, and covariance shape parameters) are reused.
+- The return type is the promoted type between the covariance parameters and `rho`.
+
+### Examples
+```jldoctest
+julia> cpp0 = CriticalPointProcess(GaussianCovariance(1.0, 2), MAX_CRITICAL);
+
+julia> phi = scale_from_intensity(cpp0, 0.02);
+
+julia> scale_from_intensity(cpp0, 1.0)
+0.3031305811642325
+```
 """
 function scale_from_intensity(cpp::CriticalPointProcess, rho::Real)
     rho > 0 || throw(DomainError(rho, "intensity rho must be positive"))
