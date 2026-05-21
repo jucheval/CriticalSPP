@@ -43,6 +43,13 @@ scale(cov::CovarianceSPP) = cov.phi
     return D
 end
 
+"""
+    innertype(cov::CovarianceSPP)
+
+Return the type `T` of the parameters of covariance model `cov`.
+"""
+innertype(::CovarianceSPP{D,T}) where {D,T} = T
+
 function convert_innertype(::Type{S}, cov::CovarianceSPP{D,T}) where {D,T,S<:Real}
     return _convert_innertype(S, cov)
 end
@@ -63,7 +70,11 @@ Evaluate covariance function c₁ at lag `r`.
 # Notes
 - The return type is the promoted type between the covariance parameters and `r`.
 """
-function (cov::CovarianceSPP) end
+function (cov::CovarianceSPP{D,T})(r::S) where {D,T,S}
+    R = promote_type(T, S)
+    covR = convert_innertype(R, cov)
+    return covR(R(r))
+end
 
 """
     practical_range(cov, val)
@@ -83,7 +94,12 @@ target level `val`.
 - For oscillatory models, TODO
 - The return type is the promoted type between the covariance parameters and `val`.
 """
-function practical_range end
+
+function practical_range(cov::CovarianceSPP{D,T}, val::S) where {D,T,S}
+    R = promote_type(T, S)
+    covR = convert_innertype(R, cov)
+    return practical_range(covR, R(val))
+end
 
 """
     c2_derivative(cov, s, k)
@@ -101,7 +117,11 @@ Return the `k`-th derivative of auxiliary covariance c₂ at `s`, i.e. `c₂(s) 
 # Notes
 - The return type is the promoted type between the covariance parameters and `s`.
 """
-function c2_derivative end
+function c2_derivative(cov::CovarianceSPP{D,T}, s::S, k::Integer) where {D,T,S}
+    R = promote_type(T, S)
+    covR = convert_innertype(R, cov)
+    return c2_derivative(covR, R(s), k)
+end
 
 """
     spectral_moment(cov, p, [closedform])

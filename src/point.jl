@@ -1,5 +1,4 @@
 # Type of critical points
-
 """
     AbstractCriticalType
 
@@ -30,6 +29,7 @@ struct AllCritical <: AbstractCriticalType end
 const MAX_CRITICAL = MaxCritical()
 const ALL_CRITICAL = AllCritical()
 
+# Critical spatial point process model
 """
     CriticalPointProcess(cov, type)
 
@@ -82,6 +82,7 @@ function CriticalPointProcess(
     return CriticalPointProcess(cov_scaled, type)
 end
 
+# Parameters
 """
     critical_type(cpp)
 
@@ -124,6 +125,14 @@ Return the dimension of the critical Point Process `cpp`, which is the same as t
 - `Int`: spatial dimension.
 """
 dimension(cpp::CriticalPointProcess) = dimension(covariance(cpp))
+
+# Helper functions
+"""
+    innertype(cpp::CriticalPointProcess)
+
+Return the type `T` of the parameters of the underlying covariance model `cpp.cov`.
+"""
+innertype(cpp::CriticalPointProcess) = innertype(covariance(cpp))
 
 function convert_innertype(::Type{S}, cpp::CriticalPointProcess) where {S<:Real}
     cov = covariance(cpp)

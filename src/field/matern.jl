@@ -56,11 +56,6 @@ end
 
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl
-# TODO: make convert functions so that this one is an interface
-function (cov::MaternCovariance{D,T})(r::S) where {D,T,S}
-    R = promote_type(T, S)
-    return MaternCovariance{D,R}(cov.phi, cov.nu)(R(r))
-end
 function (cov::MaternCovariance{D,T})(r::T) where {D,T}
     ν = cov.nu
     ϕ = scale(cov)
@@ -76,10 +71,6 @@ function (cov::MaternCovariance{D,T})(r::T) where {D,T}
 end
 
 # Practical range
-function practical_range(cov::MaternCovariance{D,T}, val::S) where {D,T,S}
-    R = promote_type(T, S)
-    return practical_range(MaternCovariance{D,R}(cov.phi, cov.nu), R(val))
-end
 function practical_range(cov::MaternCovariance{D,T}, val::T) where {D,T}
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
 
@@ -90,12 +81,6 @@ function practical_range(cov::MaternCovariance{D,T}, val::T) where {D,T}
 end
 
 # c₂ derivative
-# TODO first !!!!!!!!!!     COMMIT      !!!!!!!
-# TODO: make convert functions so that this one is an interface
-function c2_derivative(cov::MaternCovariance{D,T}, s::S, k::Integer) where {D,T,S}
-    R = promote_type(T, S)
-    return c2_derivative(MaternCovariance{D,R}(cov.phi, cov.nu), R(s), k)
-end
 function c2_derivative(cov::MaternCovariance{D,T}, s::T, k::Integer) where {D,T}
     ν = cov.nu
     ϕ = scale(cov)

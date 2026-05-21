@@ -48,11 +48,6 @@ function _convert_innertype(::Type{S}, cov::RWMCovariance{D,T}) where {D,T,S<:Re
 end
 
 # Functor
-# TODO: make convert functions so that this one is an interface
-function (cov::RWMCovariance{D,T})(r::S) where {D,T,S}
-    R = promote_type(T, S)
-    return RWMCovariance{D,R}(cov.phi)(R(r))
-end
 function (cov::RWMCovariance{D,T})(r::T) where {D,T}
     ϕ = scale(cov)
     d = T(D)
@@ -86,11 +81,6 @@ function practical_range(cov::RWMCovariance, val)
 end
 
 # c₂ derivative
-# TODO: make convert functions so that this one is an interface
-function c2_derivative(cov::RWMCovariance{D,T}, s::S, k::Integer) where {D,T,S}
-    R = promote_type(T, S)
-    return c2_derivative(RWMCovariance{D,R}(cov.phi), R(s), k)
-end
 function c2_derivative(cov::RWMCovariance{D,T}, s::T, k::Integer) where {D,T}
     ϕ = scale(cov)
     d = T(D)
