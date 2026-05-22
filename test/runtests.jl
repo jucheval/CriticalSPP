@@ -52,9 +52,10 @@ println("----")
     include("helper_MC.jl")
 end
 println("----")
-@testset verbose = true "Type parameter preservation" begin
-    include("type_parameters.jl")
+@testset verbose = true "Parametric type conservation" begin
+    include("type_conservation.jl")
 end
+println("Some tests in the above testset are broken because BigFloat support is missing.")
 println("----")
 # FIXME: all tests in this @testset fail on GitHub but pass locally.
 # It must be (at least) the eigen decomposition
