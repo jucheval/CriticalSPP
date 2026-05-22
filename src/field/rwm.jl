@@ -67,14 +67,17 @@ end
 # FIXME: currently it does not satisfy cov(practical_range(cov, val)) ≈ val
 # implement numerical root finding?
 # Copy matern.jl regrading the type preservation
-function practical_range(cov::RWMCovariance, val)
+function practical_range(cov::RWMCovariance{D,T}, val::S) where {D,T,S}
+    R = promote_type(innertype(cov), typeof(val))
+    return practical_range(_convert_innertype(R, cov), R(val))
+end
+function practical_range(cov::RWMCovariance{D,T}, val::T) where {D,T}
     ϕ = scale(cov)
-    D = dimension(cov)
 
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
     D == 2 || throw(DomainError(D, "The dimension D of RWMCovariance must be 2"))
 
-    return 2ϕ * (val * sqrt(pi))^(-2)
+    return 2ϕ * (val * sqrt(T(pi)))^(-2)
     # expression from the R code
     # delta = D / 2 - 1
     # 2 * ϕ * (gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
