@@ -3,9 +3,19 @@
 
 Common interface for covariance models used to get a critical spatial point process
 
-# Notes
+### Notes
+- `cov::CovarianceSPP` is a functor (see below)
 - `D` is the field dimension.
 - `T` is the scalar type used for covariance parameters and evaluations.
+
+### Methods (`cov::CovarianceSPP`):
+```julia
+dimension(cov)             # spatial dimension
+scale(cov)                 # scale parameter
+practical_range(cov, val)  # practical range corresponding to target level val
+c2_derivative(cov, s, k)   # k-th derivative of auxiliary covariance c₂ at s
+spectral_moment(cov, p)    # 2p-th spectral moment
+```
 """
 abstract type CovarianceSPP{D,T<:Real} end
 
@@ -15,10 +25,10 @@ abstract type CovarianceSPP{D,T<:Real} end
 
 Return the spatial dimension `D` of covariance model `cov`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 
-# Returns
+### Returns
 - `Int`: model dimension.
 """
 dimension(::CovarianceSPP{D}) where {D} = D
@@ -28,10 +38,10 @@ dimension(::CovarianceSPP{D}) where {D} = D
 
 Return the scale parameter `phi` of covariance model `cov`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model with field `phi`.
 
-# Returns
+### Returns
 - `T`: scale parameter.
 """
 scale(cov::CovarianceSPP) = cov.phi
@@ -60,14 +70,14 @@ end
 
 Evaluate covariance function c₁ at lag `r`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `r::Real`: lag.
 
-# Returns
+### Returns
 - `Real`: covariance value `c_1(r)`.
 
-# Notes
+### Notes
 - The return type is the promoted type between the covariance parameters and `r`.
 """
 function (cov::CovarianceSPP{D,T})(r::S) where {D,T,S}
@@ -82,14 +92,14 @@ end
 Return a practical range `r₀` such that covariance values beyond `r₀` are below
 target level `val`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `val::Real`: target covariance level, typically in `(0, 1)`.
 
-# Returns
+### Returns
 - `Real`: practical range.
 
-# Notes
+### Notes
 - For monotone decreasing models, `r₀` solves `cov(r₀) = val`.
 - For oscillatory models, TODO
 - The return type is the promoted type between the covariance parameters and `val`.
@@ -104,17 +114,17 @@ end
 """
     c2_derivative(cov, s, k)
 
-Return the `k`-th derivative of auxiliary covariance c₂ at `s`, i.e. `c₂(s) = c₁(√s)`, where `c₁` is the standard covariance function.
+Return the `k`-th derivative of auxiliary covariance c₂ at `s`, i.e. c₂(`s`) = c₁(√`s`), where c₁ is the standard covariance function.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `s::Real`: squared lag.
 - `k::Integer`: derivative order.
 
-# Returns
-- `Real`: value of ``c_2^{(k)}(s)``.
+### Returns
+- `Real`: value of c₂⁽ᵏ⁾(s).
 
-# Notes
+### Notes
 - The return type is the promoted type between the covariance parameters and `s`.
 """
 function c2_derivative(cov::CovarianceSPP{D,T}, s::S, k::Integer) where {D,T,S}
@@ -128,16 +138,16 @@ end
 
 Return the `2p`-th spectral moment of covariance model `cov`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `p::Integer`: moment index.
 - `closedform::Bool`: if `true`, use model-specific closed form; if `false`, compute
     from `c2_derivative(cov, 0, p)`.
 
-# Returns
+### Returns
 - `Real`: spectral moment of order `2p`.
 
-# Notes
+### Notes
 - The derivative-based path can be numerically unstable for large `p`.
 """
 # FIXME: numerical computation goes out of bounds for large p.

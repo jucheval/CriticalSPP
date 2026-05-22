@@ -8,11 +8,11 @@ c(r) = \\Gamma(d/2) (\\frac{r}{2\\phi'})^{-(d/2-1)} J_{d/2-1}(r / \\phi'), \\qua
 ```
 where ``J_\\nu`` is the Bessel function of the first kind.
 
-# Arguments
+### Arguments
 - `phi::Real=1.0`: scale parameter.
 - `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
 
-# Returns
+### Returns
 - `RWMCovariance`: covariance model instance.
 
 ### Examples

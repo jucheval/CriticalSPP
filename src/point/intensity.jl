@@ -3,10 +3,10 @@
 
 Return the intensity of the critical spatial point process `cpp`.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
 
-# Returns
+### Returns
 - `Real`: process intensity.
 
 ### Examples
@@ -34,14 +34,14 @@ end
 
 Return covariance scale `phi` that matches target intensity `rho` for model `cpp`.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: model template defining covariance family and critical type.
 - `rho::Real`: target intensity, must satisfy `rho > 0`.
 
-# Returns
+### Returns
 - `Real`: inferred scale parameter `phi`.
 
-# Notes
+### Notes
 - The scale of the covariance embedded in `cpp` is not used.
 - Other parameters (dimension, critical type, and covariance shape parameters) are reused.
 - The return type is the promoted type between the covariance parameters and `rho`.

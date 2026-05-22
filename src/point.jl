@@ -11,7 +11,7 @@ abstract type AbstractCriticalType end
 
 Type marker for considering only local maxima as critical points.
 
-# Notes
+### Notes
 - Use singleton `MAX_CRITICAL` in constructors.
 """
 struct MaxCritical <: AbstractCriticalType end
@@ -21,7 +21,7 @@ struct MaxCritical <: AbstractCriticalType end
 
 Type marker for considering all critical points.
 
-# Notes
+### Notes
 - Use singleton `ALL_CRITICAL` in constructors.
 """
 struct AllCritical <: AbstractCriticalType end
@@ -35,16 +35,26 @@ const ALL_CRITICAL = AllCritical()
 
 A critical spatial point process from covariance model `cov` and critical type `type`.
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model with known scale parameter `phi`.
 - `type::AbstractCriticalType=MAX_CRITICAL`: critical-point selector.
 
-# Returns
+### Returns
 - `CriticalPointProcess`: model instance.
 
-# Notes
+### Notes
 - Supported type singletons are `MAX_CRITICAL` and `ALL_CRITICAL`.
 - The selected critical type is encoded in the parametric type `CT`.
+
+### Methods (`cpp::CriticalPointProcess`):
+```julia
+critical_type(cpp)                              # type of critical points
+covariance(cpp)                                 # underlying covariance model
+dimension(cpp)                                  # spatial dimension
+intensity(cpp)                                  # intensity of the critical point process
+scale_from_intensity(cpp, rho)                  # infer scale ϕ matching target intensity rho
+pair_correlation_function(cpp, rs; kwargs...)   # pair correlation function of the critical point process at lags rs
+```
 """
 struct CriticalPointProcess{C<:CovarianceSPP,CT<:AbstractCriticalType}
     cov::C
@@ -61,15 +71,15 @@ end
 
 Build a critical point process targeting intensity `rho` by inferring covariance scale.
 
-# Arguments
+### Arguments
 - `init_cov::CovarianceSPP{D,T}`: covariance model used to define dimension and shape parameters.
 - `type::AbstractCriticalType`: critical-point selector.
 - `rho::Real`: target intensity, must be positive.
 
-# Returns
+### Returns
 - `CriticalPointProcess`: model with scale `phi::T` inferred from `rho`.
 
-# Notes
+### Notes
 - The scale of `init_cov` is ignored.
 - Model-specific parameters other than scale (for example `nu` for Matérn) are reused.
 - The scale of the underlying covariance model is of type `T` whatever the type of `rho`.
@@ -88,10 +98,10 @@ end
 
 Return the type of critical points considered in the critical spatial point process `cpp`.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
 
-# Returns
+### Returns
 - `AbstractCriticalType`: one of `MaxCritical()` or `AllCritical()`.
 """
 function critical_type(
@@ -105,10 +115,10 @@ end
 
 Return the covariance model underlying the critical spatial point process `cpp`.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
 
-# Returns
+### Returns
 - `CovarianceSPP`: underlying covariance model.
 """
 covariance(cpp::CriticalPointProcess) = cpp.cov
@@ -118,10 +128,10 @@ covariance(cpp::CriticalPointProcess) = cpp.cov
 
 Return the dimension of the critical Point Process `cpp`, which is the same as the dimension of its covariance model.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
 
-# Returns
+### Returns
 - `Int`: spatial dimension.
 """
 dimension(cpp::CriticalPointProcess) = dimension(covariance(cpp))

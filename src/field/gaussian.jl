@@ -7,11 +7,11 @@ Gaussian covariance with scale parameter `phi` used for a field of dimension `d`
 c(r) = \\exp(- r^2 / (2\\phi^2))
 ```
 
-# Arguments
+### Arguments
 - `phi::Real=1.0`: scale parameter.
 - `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
 
-# Returns
+### Returns
 - `GaussianCovariance`: covariance model instance.
 
 ### Examples

@@ -8,12 +8,12 @@ c(r) = \\frac{2^{1-\\nu}}{\\Gamma(\\nu)} \\left(\\frac{r \\sqrt{2\\nu}}{\\phi}\\
 ```
 where ``K_\\nu`` is the modified Bessel function of the second kind.
 
-# Arguments
+### Arguments
 - `phi::Real=1.0`: scale parameter.
 - `nu::Real`: smoothness parameter.
 - `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
 
-# Returns
+### Returns
 - `MaternCovariance`: covariance model instance.
 
 ### Examples

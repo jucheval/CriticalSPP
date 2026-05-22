@@ -4,20 +4,20 @@
 Estimate the pair correlation function of the critical point process `cpp` at
 lags `rs` with Monte Carlo using the random number generator `rng`.
 
-# Arguments
+### Arguments
 - `rng::AbstractRNG`: random number generator.
 - `cpp::CriticalPointProcess`: critical point process model.
 - `rs::AbstractVector{<:Real}`: lags where the function is estimated.
 
-# Keywords
+### Keywords
 - `n_MC::Integer=100_000`: number of Monte Carlo replications per lag.
 - `parallel::Symbol=:auto`: execution policy, one of `:auto`, `:serial`, `:threads`.
 - `show_progress::Bool=true`: show progress bar.
 
-# Returns
+### Returns
 - `NamedTuple`: fields `rs`, `pcf`, `stderr`, `n_MC`.
 
-# Notes
+### Notes
 - `pcf` is the Monte Carlo estimation.
 - `stderr` is the Monte Carlo standard deviation estimate of the estimator (not a confidence interval width).
 - The number of threads is determined by the `JULIA_NUM_THREADS` environment variable (see https://docs.julialang.org/en/v1/manual/multi-threading/)
@@ -156,12 +156,12 @@ end
 
 Return g(`r`) estimated by Monte Carlo (and its standard error) for a single lag `r`. `N01` is a pre-generated matrix with i.i.d. N(0,1) entries used for the Monte Carlo estimation. It has dimensions `(2D', n_MC)` where `D' = D + D*(D-1)/2` is the dimension of the vectorised Hessian.
 
-# Arguments
+### Arguments
 - `cpp::CriticalPointProcess`: critical point process model.
 - `r::Real`: single lag.
 - `N01::AbstractMatrix`: standard normal samples of shape `(2D', n_MC)`.
 
-# Returns
+### Returns
 - `(pcf, stderr)`: Monte Carlo estimate and associated standard deviation estimate.
 """
 function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::AbstractMatrix)
@@ -220,12 +220,12 @@ end
 
 Compute the argument of the expectation in Eq (35) of Azaïs & Delmas (2022) for the given type of critical points, where `ξ0` and `ξr` represent the Hessians ∇²X(0) and ∇²X(t) in the vectorised form used in Lemma 8 of Azaïs & Delmas (2022). The dimension `d` is passed to avoid recomputing it from the vector length.
 
-# Arguments
+### Arguments
 - `<:AbstractCriticalType`: type of critical points (MAX_CRITICAL or ALL_CRITICAL).
 - `ξ0::AbstractVector`, `ξr::AbstractVector`: vectorized Hessians at two locations.
 - `d::Integer`: field dimension.
 
-# Returns
+### Returns
 - `Real`: integrand value used in Monte Carlo estimation.
 """
 function argument_of_expectation(

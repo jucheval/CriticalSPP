@@ -4,11 +4,11 @@
 
 Return the covariance matrix of the upper diagonal and diagonal of the Hessians ∇²X(0) and ∇²X(`r`e₁) given that ∇X(0) = ∇X(`r`e₁) = 0, where X is a Gaussian field with covariance `cov`. See Lemma 8 in Azaïs & Delmas (2022).
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `r::Real`: lag along first coordinate direction.
 
-# Returns
+### Returns
 - `Symmetric`: covariance matrix of the concatenated vectorized Hessians.
 """
 function covariance_hessians_x0_xr(cov::CovarianceSPP{D,T}, r) where {D,T}
@@ -83,14 +83,14 @@ end
 
 Return the density at 0 of V(`r`) = (∇X(0), ∇X(`r`*e₁)), where X is a Gaussian field with covariance `cov`. See proof of Lemma 8 (beginning of section B.2.1) in Azaïs & Delmas (2022).
 
-# Arguments
+### Arguments
 - `cov::CovarianceSPP`: covariance model.
 - `r::Real`: lag along first coordinate direction.
 
-# Returns
+### Returns
 - `Real`: Gaussian density value at zero for `V(r)`.
 
-# Notes
+### Notes
 - The return type is the promoted type between the covariance parameters and `r`.
 """
 function density_vr(cov::CovarianceSPP{D,T}, r) where {D,T}
@@ -124,15 +124,15 @@ end
 
 Compute the determinant of the m x m minor of a d x d symmetric matrix defined by the entries of `v`, where `v` is a vector of length d + d*(d-1)/2 containing the diagonal and upper diagonal entries of the symmetric matrix. 
 
-# Arguments
+### Arguments
 - `v::AbstractVector`: vectorized symmetric matrix with specific layout (see notes below)
 - `m::Integer`: size of leading principal minor.
 - `d::Integer`: full matrix size.
 
-# Returns
+### Returns
 - `Real`: determinant of the leading `m x m` principal minor.
 
-# Notes
+### Notes
 - The layout of `v` is specific to the Hessian representation used in
     Azaïs and Delmas (2022), not the usual packed symmetric layout.
 - The minor is always taken on the first `m` rows and columns.
