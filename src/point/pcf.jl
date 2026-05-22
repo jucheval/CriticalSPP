@@ -50,19 +50,23 @@ function pair_correlation_function(
     _check_nMC(n_MC)
     _check_parallel(parallel)
 
+    T = promote_type(eltype(rs), innertype(cpp))
+    rs_vec = collect(T, rs)
+
     nlag = length(rs)
     if nlag == 0
-        return (rs=Float64[], pcf=Float64[], stderr=Float64[], n_MC=n_MC)
+        return (rs=T[], pcf=T[], stderr=T[], n_MC=n_MC)
     end
+    cppT = convert_innertype(T, cpp)
 
     use_threads = _thread_policy(parallel, nlag, n_MC)
     pcf, stderr = if use_threads
-        _pair_correlation_threaded(rng, cpp, rs, n_MC, show_progress)
+        _pair_correlation_threaded(rng, cppT, rs_vec, n_MC, show_progress)
     else
-        _pair_correlation_serial(rng, cpp, rs, n_MC, show_progress)
+        _pair_correlation_serial(rng, cppT, rs_vec, n_MC, show_progress)
     end
 
-    return (rs=collect(Float64, rs), pcf=pcf, stderr=stderr, n_MC=n_MC)
+    return (rs=rs_vec, pcf=pcf, stderr=stderr, n_MC=n_MC)
 end
 
 function pair_correlation_function(
@@ -110,13 +114,14 @@ function _pair_correlation_serial(
     n_MC::Integer,
     show_progress::Bool,
 )
+    T = eltype(rs)
     D = dimension(cpp)
     nlag = length(rs)
     dd = D + D * (D - 1) ÷ 2
 
-    pcf = similar(rs, Float64)
-    stderr = similar(rs, Float64)
-    N01 = randn(rng, 2dd, n_MC)
+    pcf = similar(rs)
+    stderr = similar(rs)
+    N01 = randn(rng, T, 2dd, n_MC)
 
     p = Progress(nlag; enabled=show_progress)
     for i in eachindex(rs)
@@ -134,13 +139,14 @@ function _pair_correlation_threaded(
     n_MC::Integer,
     show_progress::Bool,
 )
+    T = eltype(rs)
     D = dimension(cpp)
     nlag = length(rs)
     dd = D + D * (D - 1) ÷ 2
 
-    pcf = similar(rs, Float64)
-    stderr = similar(rs, Float64)
-    N01 = randn(rng, 2dd, n_MC)
+    pcf = similar(rs)
+    stderr = similar(rs)
+    N01 = randn(rng, T, 2dd, n_MC)
 
     p = Progress(nlag; enabled=show_progress)
     Threads.@threads for i in eachindex(rs)
@@ -165,6 +171,7 @@ Return g(`r`) estimated by Monte Carlo (and its standard error) for a single lag
 - `(pcf, stderr)`: Monte Carlo estimate and associated standard deviation estimate.
 """
 function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::AbstractMatrix)
+    T = typeof(r)
     D = dimension(cpp)
     cov = covariance(cpp)
     dd = D + D * (D - 1) ÷ 2 # dimension of Hessian matrices
@@ -180,7 +187,7 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     #     eig_val = (0, NaN)
     # end
 
-    diag = Diagonal(sqrt.(max.(λ, 0)))
+    diag = Diagonal(sqrt.(clamp!(λ, 0, Inf)))
     ξ = P * diag * N01  # ξ is 2dd x n_MC
 
     # Welford's online algorithm to compute mean and standard error in a single pass without storing all values.
@@ -188,7 +195,7 @@ function _pair_correlation_single(cpp::CriticalPointProcess, r::Real, N01::Abstr
     ξr = @view ξ[(dd + 1):(2 * dd), 1]
     value = argument_of_expectation(critical_type(cpp), ξ0, ξr, D)
     M = value # running mean
-    S = 0.0 # running sum of squared deviations
+    S = zero(T) # running sum of squared deviations
     count = 1
     for i in 2:n_MC
         ξ0 = @view ξ[1:dd, i]
@@ -263,10 +270,10 @@ function argument_of_expectation(
 
     if ismax || ismin
         # In that branch, tmp0 = det_minor(ξ0, d, d) and tmpr = det_minor(ξr, d, d) 
-        return 0.5 * abs(tmp0) * abs(tmpr)
+        return abs(tmp0) * abs(tmpr) / 2
         # By symmetry, the quantity for local maxima is the half of 
         # the quantity for all extrema
     else
-        return 0.0
+        return zero(eltype(ξ0))
     end
 end

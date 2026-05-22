@@ -203,3 +203,33 @@ end
         @test CriticalSPP.density_vr(cov, r) isa R
     end
 end
+
+@testset "det_minor" begin
+    for T in (Float32, Float64, BigFloat), D in 1:2
+        v = rand(T, D + D * (D - 1) ÷ 2)
+        @test CriticalSPP.det_minor(v, 1, D) isa T
+    end
+end
+
+@testset "argument_of_expectation" begin
+    for T in (Float32, Float64, BigFloat), D in 1:2, ct in _CRITICAL_TYPES
+        ξ0 = rand(T, D + D * (D - 1) ÷ 2)
+        ξr = rand(T, D + D * (D - 1) ÷ 2)
+
+        @test CriticalSPP.argument_of_expectation(ct, ξ0, ξr, D) isa T
+    end
+end
+
+@testset "pair_correlation_function" begin
+    for T in (Float32, Float64), S in (Float32, Float64), D in 1:2, ct in _CRITICAL_TYPES
+        cov = GaussianCovariance(T(1.5), D)
+        cpp = CriticalPointProcess(cov, ct)
+        rs = S.(1:2)
+        R = promote_type(T, S)
+
+        output = pair_correlation_function(cpp, rs; show_progress=false, n_MC=10)
+        @test eltype(output.rs) == R
+        @test eltype(output.pcf) == R
+        @test eltype(output.stderr) == R
+    end
+end
