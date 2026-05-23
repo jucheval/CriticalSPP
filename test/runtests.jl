@@ -28,7 +28,7 @@ end
 println("----")
 @testset verbose = false "ExplicitImports" begin
     test_all_explicit_imports_are_public(CriticalSPP)
-    test_all_qualified_accesses_are_public(CriticalSPP; ignore=(:gamma,)) # ignore gamma which is not public in Bessels.jl
+    test_all_qualified_accesses_are_public(CriticalSPP)
     test_all_explicit_imports_via_owners(CriticalSPP)
     test_all_qualified_accesses_via_owners(CriticalSPP)
     test_no_implicit_imports(CriticalSPP)
@@ -51,6 +51,11 @@ println("----")
 @testset verbose = true "Helper functions for MC estimation" begin
     include("helper_MC.jl")
 end
+println("----")
+@testset verbose = true "Parametric type conservation" begin
+    include("type_conservation.jl")
+end
+println("Some tests in the above testset are broken because BigFloat support is missing.")
 println("----")
 # FIXME: all tests in this @testset fail on GitHub but pass locally.
 # It must be (at least) the eigen decomposition

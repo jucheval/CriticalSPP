@@ -7,7 +7,26 @@ Gaussian covariance with scale parameter `phi` used for a field of dimension `d`
 c(r) = \\exp(- r^2 / (2\\phi^2))
 ```
 
-The scale parameter `phi` is optional and defaults to 1.0.
+### Arguments
+- `phi::Real=1.0`: scale parameter.
+- `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
+
+### Returns
+- `GaussianCovariance`: covariance model instance.
+
+### Examples
+```jldoctest
+julia> cov = GaussianCovariance(2.0, 2);
+
+julia> scale(cov)
+2.0
+
+julia> dimension(cov)
+2
+
+julia> cov(0.0)
+1.0
+```
 """
 struct GaussianCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -22,6 +41,11 @@ function GaussianCovariance(phi::T, d::Integer) where {T<:Real}
 end
 
 GaussianCovariance(d::Integer) = GaussianCovariance(1.0, d)
+
+# Convert
+function _convert_innertype(::Type{S}, cov::GaussianCovariance{D,T}) where {D,T,S<:Real}
+    return GaussianCovariance{D,S}(S(cov.phi))
+end
 
 # Functor
 function (cov::GaussianCovariance)(r)
@@ -53,5 +77,5 @@ end
 
 # Internals
 function constant_λ₄_over_3λ₂(::GaussianCovariance)
-    return 1.0
+    return 1
 end

@@ -2,7 +2,7 @@ phirange = range(0.5, 2.0; step=0.5)
 rrange = range(0.1, 2.1; step=0.5)
 nurange = range(4.1, 6.1; step=0.5)
 
-@testset verbose = true "Covariance matrix is positive definite" begin
+@testset "Covariance matrix is positive definite" begin
     @testset "Gaussian covariance" begin
         for phi in phirange, d in 1:4, r in rrange
             Σ = CriticalSPP.covariance_hessians_x0_xr(GaussianCovariance(phi, d), r)
@@ -28,7 +28,7 @@ nurange = range(4.1, 6.1; step=0.5)
     end
 end
 
-@testset verbose = true "Density at zero is positive" begin
+@testset "Density at zero is positive" begin
     @testset "Gaussian covariance" begin
         for phi in phirange, d in 1:4, r in rrange
             dens = CriticalSPP.density_vr(GaussianCovariance(phi, d), r)

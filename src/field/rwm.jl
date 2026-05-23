@@ -8,7 +8,26 @@ c(r) = \\Gamma(d/2) (\\frac{r}{2\\phi'})^{-(d/2-1)} J_{d/2-1}(r / \\phi'), \\qua
 ```
 where ``J_\\nu`` is the Bessel function of the first kind.
 
-The scale parameter `phi` is optional and defaults to 1.0.
+### Arguments
+- `phi::Real=1.0`: scale parameter.
+- `d::Int`: spatial dimension, must satisfy `1 <= d <= 4`.
+
+### Returns
+- `RWMCovariance`: covariance model instance.
+
+### Examples
+```jldoctest
+julia> cov = RWMCovariance(1.0, 2);
+
+julia> scale(cov)
+1.0
+
+julia> dimension(cov)
+2
+
+julia> cov(0.0)
+1.0
+```
 """
 struct RWMCovariance{D,T<:Real} <: CovarianceSPP{D,T}
     phi::T
@@ -23,49 +42,59 @@ end
 
 RWMCovariance(d::Integer) = RWMCovariance(1.0, d)
 
+# Convert
+function _convert_innertype(::Type{S}, cov::RWMCovariance{D,T}) where {D,T,S<:Real}
+    return RWMCovariance{D,S}(S(cov.phi))
+end
+
 # Functor
-function (cov::RWMCovariance)(r)
+function (cov::RWMCovariance{D,T})(r::T) where {D,T}
     ϕ = scale(cov)
-    D = dimension(cov)
+    d = T(D)
 
     # guard r close to 0 to avoid numerical explosion
-    r ≈ 0 && return 1.0
+    r ≈ 0 && return one(T)
 
-    δ = r * √D / ϕ
-    J = besselj(D / 2 - 1, δ)
-    Γ = Bessels.gamma(D / 2)
+    δ = r * sqrt(d) / ϕ
+    α = d / 2 - one(T)
+    J = besselj(α, δ)
+    Γ = gamma(d / 2)
 
-    return Γ * (δ / 2)^(-(D / 2 - 1)) * J
+    return Γ * (δ / 2)^(-α) * J
 end
 
 # Practical range (only for d=2, using asymptotic behaviour of J0)
 # FIXME: currently it does not satisfy cov(practical_range(cov, val)) ≈ val
 # implement numerical root finding?
-function practical_range(cov::RWMCovariance, val)
+# Copy matern.jl regrading the type preservation
+function practical_range(cov::RWMCovariance{D,T}, val::S) where {D,T,S}
+    R = promote_type(innertype(cov), typeof(val))
+    return practical_range(_convert_innertype(R, cov), R(val))
+end
+function practical_range(cov::RWMCovariance{D,T}, val::T) where {D,T}
     ϕ = scale(cov)
-    D = dimension(cov)
 
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
     D == 2 || throw(DomainError(D, "The dimension D of RWMCovariance must be 2"))
 
-    return 2ϕ * (val * sqrt(pi))^(-2)
+    return 2ϕ * (val * sqrt(T(pi)))^(-2)
     # expression from the R code
     # delta = D / 2 - 1
-    # 2 * ϕ * (Bessels.gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
+    # 2 * ϕ * (gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
 end
 
 # c₂ derivative
-function c2_derivative(cov::RWMCovariance, s, k::Integer)
-    D = dimension(cov)
+function c2_derivative(cov::RWMCovariance{D,T}, s::T, k::Integer) where {D,T}
     ϕ = scale(cov)
+    d = T(D)
 
-    cst = (-1)^k / 2^k / ϕ^(2k) * (D / 2)^k * Bessels.gamma(D / 2)
+    cst = (-one(T))^k / 2^k / ϕ^(2k) * (d / 2)^k * gamma(d / 2)
 
     # guard s close to 0 to avoid numerical explosion
-    s ≈ 0 && return cst / Bessels.gamma(D / 2 + k)
+    s ≈ 0 && return cst / gamma(d / 2 + k)
 
-    α = D / 2 - 1 + k
-    δ = √s * √D / ϕ
+    α = d / 2 - one(T) + k
+    δ = √s * √d / ϕ
 
     return cst * (δ / 2)^(-α) * besselj(α, δ)
 end
@@ -80,5 +109,5 @@ end
 # Internals
 function constant_λ₄_over_3λ₂(cov::RWMCovariance)
     D = dimension(cov)
-    return D / (D + 2)
+    return D//(D + 2)
 end
