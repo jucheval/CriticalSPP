@@ -8,7 +8,7 @@ using Test
 ### They are at the end of the function _pair_correlation_single
 
 # Execute the following command in the terminal:
-# julia --project=test/ --color=yes test/comparison_with_R/runtests.jl
+# julia --startup-file=no --project=test/ --color=yes test/comparison_with_R/runtests.jl
 
 # Run test suite
 ti = time()

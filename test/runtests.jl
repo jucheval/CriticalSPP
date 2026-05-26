@@ -9,10 +9,9 @@ using Test
 
 global_logger(NullLogger()) # used to remove the logging info messages from the test output
 
-# The Pkg manager ]test macro does not work for DrWatson projects
-# We need to include the test files manually
-# For instance, execute the following command in the terminal:
-# julia --project=test/ --color=yes test/runtests.jl
+# Unlike standard DrWatson projects, the Pkg manager ]test macro works
+# and you can also execute the following command in the terminal:
+# julia --startup-file=no --project=. --color=yes -e 'using Pkg; Pkg.test()'
 
 # Run test suite
 ti = time()
