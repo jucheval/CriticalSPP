@@ -46,6 +46,19 @@ Return the scale parameter `phi` of covariance model `cov`.
 """
 scale(cov::CovarianceSPP) = cov.phi
 
+"""
+    otherparameters(cov::CovarianceSPP{D,T}) where {D,T} -> NTuple{N,T}
+
+Return the parameters of covariance model `cov` other than the scale parameter `phi`.
+
+### Arguments
+- `cov::CovarianceSPP`: covariance model with field `phi`.
+
+### Returns
+- `NTuple{N,T}`: `N` parameters other than the scale parameter.
+"""
+otherparameters(cov::CovarianceSPP) = ()
+
 # Helper functions
 @inline function _check_dimension(::Val{D}) where {D}
     D isa Int || throw(DomainError(typeof(D), "type of D must be Int"))

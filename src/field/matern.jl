@@ -47,12 +47,16 @@ function MaternCovariance(phi::T, nu::T, d::Integer) where {T<:Real}
     return MaternCovariance{d,T}(phi, nu)
 end
 
-MaternCovariance(nu::T, d::Integer) where {T<:Real} = MaternCovariance(1.0, nu, d)
+function MaternCovariance(nu::T, d::Integer) where {T<:Real}
+    return MaternCovariance(1.0, convert(Float64, nu), d)
+end
 
 # Convert
 function _convert_innertype(::Type{S}, cov::MaternCovariance{D,T}) where {D,T,S<:Real}
     return MaternCovariance{D,S}(S(cov.phi), S(cov.nu))
 end
+
+otherparameters(cov::MaternCovariance) = (cov.nu,)
 
 # Functor
 ### adapted from MaternVariogram in GeoStats.jl

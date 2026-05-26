@@ -99,7 +99,8 @@ function CriticalPointProcess(
     init_cov::C, type::CT, rho::Real
 ) where {C<:CovarianceSPP,CT<:AbstractCriticalType}
     phi = scale_from_intensity(CriticalPointProcess(init_cov, type), rho)
-    cov_scaled = C(phi)
+    param = otherparameters(init_cov)
+    cov_scaled = C(phi, param...)
     return CriticalPointProcess(cov_scaled, type)
 end
 
