@@ -104,7 +104,6 @@ target level `val`.
 - For oscillatory models, TODO
 - The return type is the promoted type between the covariance parameters and `val`.
 """
-
 function practical_range(cov::CovarianceSPP{D,T}, val::S) where {D,T,S}
     R = promote_type(T, S)
     covR = convert_innertype(R, cov)
@@ -150,9 +149,9 @@ Return the `2p`-th spectral moment of covariance model `cov`.
 ### Notes
 - The derivative-based path can be numerically unstable for large `p`.
 """
-# FIXME: numerical computation goes out of bounds for large p.
-# To see it, fix prange = 1:15 in test/spectral_moment.jl.
 function spectral_moment(cov::CovarianceSPP, p::Integer, closedform::Bool)
+    # FIXME: numerical computation goes out of bounds for large p.
+    # To see it, fix prange = 1:15 in test/spectral_moment.jl.
     if closedform
         return spectral_moment(cov, p)
     else

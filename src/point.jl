@@ -9,7 +9,7 @@ abstract type AbstractCriticalType end
 """
     MaxCritical
 
-Type marker for considering only local maxima as critical points.
+Singleton type for considering only local maxima as critical points.
 
 ### Notes
 - Use singleton `MAX_CRITICAL` in constructors.
@@ -19,14 +19,25 @@ struct MaxCritical <: AbstractCriticalType end
 """
     AllCritical
 
-Type marker for considering all critical points.
+Singleton type for considering all critical points.
 
 ### Notes
 - Use singleton `ALL_CRITICAL` in constructors.
 """
 struct AllCritical <: AbstractCriticalType end
 
+"""
+    MAX_CRITICAL
+
+Marker for considering only local maxima as critical points.
+"""
 const MAX_CRITICAL = MaxCritical()
+
+"""
+    ALL_CRITICAL
+
+Marker for considering all critical points.
+"""
 const ALL_CRITICAL = AllCritical()
 
 # Critical spatial point process model

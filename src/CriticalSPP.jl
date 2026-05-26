@@ -15,7 +15,7 @@ export dimension, scale, practical_range, c2_derivative, spectral_moment
 
 # Critical point processes
 export AbstractCriticalType
-export MaxCritical, AllCritical, MAX_CRITICAL, ALL_CRITICAL
+export MAX_CRITICAL, ALL_CRITICAL
 export CriticalPointProcess
 export critical_type, intensity, scale_from_intensity, pair_correlation_function
 

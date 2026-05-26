@@ -18,7 +18,7 @@ ti = time()
 println("Starting tests")
 println("----")
 @testset verbose = false "Code quality (Aqua.jl)" begin
-    Aqua.test_all(CriticalSPP)
+    Aqua.test_all(CriticalSPP; undocumented_names=true)
 end
 println("----")
 @testset verbose = false "Formatting" begin
