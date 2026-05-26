@@ -35,6 +35,10 @@ println("----")
     test_no_stale_explicit_imports(CriticalSPP)
 end
 println("----")
+@testset verbose = true "Constructors" begin
+    include("constructors.jl")
+end
+println("----")
 @testset verbose = true "Spectral moments (numerical and closed-form compliance)" begin
     include("spectral_moment.jl")
 end

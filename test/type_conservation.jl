@@ -16,6 +16,10 @@ end
     include("type_conservation/constructors.jl")
 end
 
+@testset "Inner type and conversion" begin
+    include("type_conservation/innertype.jl")
+end
+
 @testset "Random field functions" begin
     include("type_conservation/field_functions.jl")
 end
