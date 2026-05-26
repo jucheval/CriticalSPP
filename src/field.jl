@@ -81,6 +81,9 @@ Evaluate covariance function c₁ at lag `r`.
 - The return type is the promoted type between the covariance parameters and `r`.
 """
 function (cov::CovarianceSPP{D,T})(r::S) where {D,T,S}
+    # TODO: For small lags, the condition number of the covariance matrix is large
+    # leading to numerical explosion. It concerns all 3 models.
+    # See https://github.com/JuliaEarth/GeoStatsFunctions.jl/issues/80
     R = promote_type(T, S)
     covR = convert_innertype(R, cov)
     return covR(R(r))
