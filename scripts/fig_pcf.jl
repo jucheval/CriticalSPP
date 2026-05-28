@@ -36,24 +36,36 @@ rminmax_df = @chain df begin
     @groupby :type :d
     @combine :rminmax = minimum(:rmax)
 end
-
+# filter dataframe to get same r ranges on each facet
 @chain df begin
     leftjoin!(rminmax_df; on=[:type, :d])
     @rsubset! :r <= :rminmax
     @select! Not(:rminmax)
 end
 
+# labels for the facets columns
+const D_LABELS = Dict(1 => L"d=1", 2 => L"d=2", 3 => L"d=3")
+@rtransform! df :type = TYPE_LABELS[:type]
+# labels for the facets rows
+const TYPE_LABELS = Dict("all" => L"L=\{0,...,d\}", "max" => L"L=\{d\}")
+@rtransform! df :d = D_LABELS[:d]
+
+# solid lines for the pcf
 lines = visual(Lines) * mapping(:r, :pcf; color=:cov, row=:type, col=:d)
+# bands for the confidence intervals
 band =
     visual(Band; alpha=0.3) *
     mapping(:r, :pcf_lower, :pcf_upper; color=:cov, row=:type, col=:d)
+# dashed line for the reference value of 1
 href = visual(HLines; color=:black, linestyle=:dash) * mapping(1.0)
+# combine the three layers into a single plot object
 plt = data(df) * (lines + band) + href
 
-### plot
+# plot
+# set_theme!(theme_ggplot2())
 fig, grid = draw(
     plt,
     scales(; X=(; label=L"r"), Y=(; label=L"g_L(r)"));
     facet=(; linkxaxes=:none, linkyaxes=:none),
-    legend=(; position=:top),
+    legend=(; position=:top, titlesize=0),
 )
