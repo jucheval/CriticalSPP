@@ -1,0 +1,59 @@
+using DrWatson
+@quickactivate
+using CriticalSPP
+using Distributions
+using DataFrames, DataFramesMeta
+using CairoMakie, AlgebraOfGraphics
+
+# relative path to the directory where results are stored
+loaddir = joinpath(@__DIR__, "..", "data", "sims", "pcf")
+
+# collect each file as a row
+df_wide = collect_results(loaddir)
+
+# reshape `df_wide` because each row contains a vector of 
+# lag values, pcf values and standard errors
+df = DataFrame()
+for row in eachrow(df_wide)
+    @unpack d, rs, nMC, pcf, stderr, type, rho, cov = row
+    for (r, p, s) in zip(rs, pcf, stderr)
+        push!(df, (d=d, r=r, nMC=nMC, pcf=p, stderr=s, type=type, rho=rho, cov=cov))
+    end
+end
+
+# compute the confidence interval for the pcf estimation
+@chain df begin
+    @rtransform! :a = quantile(Normal(), 0.975) ./ sqrt.(:nMC) # multiplicative factor for the confidence interval of the exact recovery rate
+    @rtransform! :pcf_lower = :pcf - :a * :stderr
+    @rtransform! :pcf_upper = :pcf + :a * :stderr
+    @select! Not([:a, :nMC, :stderr]) # remove useless columns
+    @rsubset!(:pcf < 3.0) # remove exploding values
+end
+# helper dataframe to compute the minimal r range for each type and dimension
+rminmax_df = @chain df begin
+    @groupby :type :d :cov
+    @combine :rmax = maximum(:r)
+    @groupby :type :d
+    @combine :rminmax = minimum(:rmax)
+end
+
+@chain df begin
+    leftjoin!(rminmax_df; on=[:type, :d])
+    @rsubset! :r <= :rminmax
+    @select! Not(:rminmax)
+end
+
+lines = visual(Lines) * mapping(:r, :pcf; color=:cov, row=:type, col=:d)
+band =
+    visual(Band; alpha=0.3) *
+    mapping(:r, :pcf_lower, :pcf_upper; color=:cov, row=:type, col=:d)
+href = visual(HLines; color=:black, linestyle=:dash) * mapping(1.0)
+plt = data(df) * (lines + band) + href
+
+### plot
+fig, grid = draw(
+    plt,
+    scales(; X=(; label=L"r"), Y=(; label=L"g_L(r)"));
+    facet=(; linkxaxes=:none, linkyaxes=:none),
+    legend=(; position=:top),
+)
