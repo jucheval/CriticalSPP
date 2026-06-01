@@ -5,8 +5,9 @@ using Distributions
 using DataFrames, DataFramesMeta
 using CairoMakie, AlgebraOfGraphics
 
-# relative path to the directory where results are stored
+# relative paths to the directories
 loaddir = joinpath(@__DIR__, "..", "data", "sims", "pcf")
+plotdir = joinpath(@__DIR__, "..", "plots")
 
 # collect each file as a row
 df_wide = collect_results(loaddir)
@@ -45,10 +46,10 @@ end
 
 # labels for the facets columns
 const D_LABELS = Dict(1 => L"d=1", 2 => L"d=2", 3 => L"d=3")
-@rtransform! df :type = TYPE_LABELS[:type]
+@rtransform! df :d = D_LABELS[:d]
 # labels for the facets rows
 const TYPE_LABELS = Dict("all" => L"L=\{0,...,d\}", "max" => L"L=\{d\}")
-@rtransform! df :d = D_LABELS[:d]
+@rtransform! df :type = TYPE_LABELS[:type]
 
 # solid lines for the pcf
 lines = visual(Lines) * mapping(:r, :pcf; color=:cov, row=:type, col=:d)
@@ -62,10 +63,12 @@ href = visual(HLines; color=:black, linestyle=:dash) * mapping(1.0)
 plt = data(df) * (lines + band) + href
 
 # plot
-# set_theme!(theme_ggplot2())
+set_theme!(theme_ggplot2())
 fig, grid = draw(
     plt,
     scales(; X=(; label=L"r"), Y=(; label=L"g_L(r)"));
-    facet=(; linkxaxes=:none, linkyaxes=:none),
+    figure=(; size=(800, 500)),
+    facet=(; linkxaxes=:minimal, linkyaxes=:none),
     legend=(; position=:top, titlesize=0),
 )
+safesave(joinpath(plotdir, "pcf.pdf"), fig)
