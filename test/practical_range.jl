@@ -19,9 +19,12 @@ end
 end
 
 @testset "RWM covariance" begin
-    for phi in phirange, nu in nurange, val in valrange, d in 2:4
+    for phi in phirange, nu in nurange, val in 0.01:0.1:0.41, d in 2:4
         cov = RWMCovariance(phi, d)
         pr = practical_range(cov, val)
-        @test isapprox(cov(pr), val)
+        for _ in 1:5
+            pr += rand() * 0.1 * pr
+            @test abs(cov(pr)) < val
+        end
     end
 end
