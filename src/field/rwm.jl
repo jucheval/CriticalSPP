@@ -78,7 +78,7 @@ function practical_range(cov::RWMCovariance{D,T}, val) where {D,T}
     β = (d + 1) / 2 - one(T)
     Γ = gamma(d / 2)
 
-    return scale(cov) * 2 * T(pi)^(-1 / 2β) * d^(-1 / 2) * Γ^(1 / β) / val^(1 / β)
+    return scale(cov) * 2 * T(pi)^(-1 / 2β) * d^(-1 / T(2)) * Γ^(1 / β) / val^(1 / β)
 end
 
 # c₂ derivative
