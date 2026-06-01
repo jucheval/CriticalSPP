@@ -18,11 +18,10 @@ end
     end
 end
 
-# TODO: adapt the test for the RWM covariance once the practical range is implemented
-# @testset "RWM covariance" begin
-#     for phi in phirange, d in [2], val in valrange # practical range is only implemented for 2D RWM covariance
-#         cov = RWMCovariance(phi, d)
-#         pr = practical_range(cov, val)
-#         @test isapprox(cov(pr), val)
-#     end
-# end
+@testset "RWM covariance" begin
+    for phi in phirange, nu in nurange, val in valrange, d in 2:4
+        cov = RWMCovariance(phi, d)
+        pr = practical_range(cov, val)
+        @test isapprox(cov(pr), val)
+    end
+end
