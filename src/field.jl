@@ -117,7 +117,7 @@ target level `val`.
 
 ### Notes
 - For models with monotone decreasing covariance, `r₀` solves `cov(r₀) = val`.
-- For Random Wave models, the covariance is oscillatory with decreasing envelope (except for d=1). In this case, `r₀` solves `envelope(r₀) = val`.
+- For Random Wave models, the covariance is oscillatory with explicit decreasing asymptotic envelope (except for d=1). In this case, `r₀` solves `envelope(r₀) = val`.
 - The return type is the promoted type between the covariance parameters and `val`.
 """
 function practical_range(cov::CovarianceSPP{D,T}, val::S) where {D,T,S}
