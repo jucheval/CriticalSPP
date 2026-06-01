@@ -63,24 +63,22 @@ function (cov::RWMCovariance{D,T})(r::T) where {D,T}
     return Γ * (δ / 2)^(-α) * J
 end
 
-# Practical range (only for d=2, using asymptotic behaviour of J0)
-# FIXME: currently it does not satisfy cov(practical_range(cov, val)) ≈ val
-# implement numerical root finding?
-# Copy matern.jl regrading the type preservation
-function practical_range(cov::RWMCovariance{D,T}, val::S) where {D,T,S}
-    R = promote_type(innertype(cov), typeof(val))
-    return practical_range(_convert_innertype(R, cov), R(val))
+# Practical range
+function practical_range(cov::RWMCovariance{1,T}, val) where {T}
+    return throw(
+        ArgumentError(
+            "practical range does not make sense for RWM covariance in dimension 1 because the limsup of the covariance is 1 as r goes to infinity",
+        ),
+    )
 end
-function practical_range(cov::RWMCovariance{D,T}, val::T) where {D,T}
-    ϕ = scale(cov)
-
+function practical_range(cov::RWMCovariance{D,T}, val) where {D,T}
     (0 < val < 1) || throw(DomainError(val, "the value must satisfy 0 < val < 1"))
-    D == 2 || throw(DomainError(D, "The dimension D of RWMCovariance must be 2"))
 
-    return 2ϕ * (val * sqrt(T(pi)))^(-2)
-    # expression from the R code
-    # delta = D / 2 - 1
-    # 2 * ϕ * (gamma(delta + 1) / (sqrt(pi) * val))^(1 / (delta + 1 / 2))
+    d = T(D)
+    β = (d + 1) / 2 - one(T)
+    Γ = gamma(d / 2)
+
+    return scale(cov) * 2 * T(pi)^(-1 / 2β) * d^(-1 / 2) * Γ^(1 / β) / val^(1 / β)
 end
 
 # c₂ derivative
