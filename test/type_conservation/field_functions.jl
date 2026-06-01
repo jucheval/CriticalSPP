@@ -188,7 +188,7 @@ end
                 pr = practical_range(cov, val)
                 @test pr isa R
             catch err
-                if D != 2 || (R == BigFloat && is_bessel_methoderror(err))
+                if R == BigFloat && is_bessel_methoderror(err)
                     @test_skip "BigFloat Bessel support missing in SpecialFunctions"
                 else
                     rethrow(err)
@@ -198,7 +198,7 @@ end
     end
 
     @testset "RWM covariance" begin
-        for T in _FLOAT_TYPES, S in _FLOAT_TYPES, D in 1:4
+        for T in _FLOAT_TYPES, S in _FLOAT_TYPES, D in 2:4
             phi = T(1.2)
             val = S(0.5)
             R = promote_type(T, S)
@@ -208,7 +208,7 @@ end
                 pr = practical_range(cov, val)
                 @test pr isa R
             catch err
-                if D != 2 || (R == BigFloat && is_bessel_methoderror(err))
+                if R == BigFloat && is_bessel_methoderror(err)
                     @test_skip "BigFloat Bessel support missing in SpecialFunctions"
                 else
                     rethrow(err)

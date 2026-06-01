@@ -18,11 +18,19 @@ end
     end
 end
 
-# TODO: adapt the test for the RWM covariance once the practical range is implemented
-# @testset "RWM covariance" begin
-#     for phi in phirange, d in [2], val in valrange # practical range is only implemented for 2D RWM covariance
-#         cov = RWMCovariance(phi, d)
-#         pr = practical_range(cov, val)
-#         @test isapprox(cov(pr), val)
-#     end
-# end
+@testset "RWM covariance" begin
+    for phi in phirange, nu in nurange, val in 0.01:0.1:0.41, d in 1:4
+        cov = RWMCovariance(phi, d)
+        if d == 1
+            @test_throws ArgumentError(
+                "practical range does not make sense for RWM covariance in dimension 1 because the limsup of the covariance is 1 as r goes to infinity",
+            ) practical_range(cov, val)
+            continue
+        end
+        pr = practical_range(cov, val)
+        for _ in 1:5
+            pr += rand() * 0.1 * pr
+            @test abs(cov(pr)) < val
+        end
+    end
+end
