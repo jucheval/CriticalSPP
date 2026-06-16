@@ -2,6 +2,7 @@
 using DrWatson
 @quickactivate
 using CriticalSPP
+using Distributions
 using DataFrames, DataFramesMeta
 using CairoMakie, AlgebraOfGraphics
 
@@ -34,7 +35,6 @@ end
 
 ## Plot
 using SpecialFunctions
-using Distributions
 
 function funI(rs, pcfs, d, rho)
     sB1 = 2 * pi^(d / 2) / gamma(d / 2)
@@ -73,7 +73,7 @@ plt = data(df_I) * (lines + band) + href
 set_theme!(theme_ggplot2())
 fig, grid = draw(
     plt,
-    scales(; X=(; label=L"r"), Y=(; label=L"g_{\mathcal{L}}(r)"));
+    scales(; X=(; label=L"r"), Y=(; label=L"I_{\mathcal{L}}(r)"));
     figure=(; size=(800, 500)),
     facet=(; linkxaxes=:minimal, linkyaxes=:none),
     legend=(; position=:top, titlesize=0),
