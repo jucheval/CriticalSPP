@@ -21,12 +21,12 @@ function intensity(cpp::CriticalPointProcess)
     cov = covariance(cpp)
     d = dimension(cov)
     type = critical_type(cpp)
-    T = typeof(scale(cov))
+    ϕ = scale(cov)
+    T = innertype(cpp)
 
-    λ₂ = spectral_moment(cov, 1)
-    λ₄ = spectral_moment(cov, 2)
+    K = convert(T, constant_λ₄_over_3λ₂(cov))
     cst = convert(T, INTENSITY_CONSTANT_DICT[(d, type)])
-    return cst * (λ₄ / (T(3) * λ₂))^(T(d) / T(2))
+    return cst * K^(T(d) / T(2)) * ϕ^(-T(d))
 end
 
 """
