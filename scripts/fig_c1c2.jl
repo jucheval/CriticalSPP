@@ -22,7 +22,6 @@ const COVARIANCE = Dict(
 # Dataframe
 df = DataFrame()
 for d in 1:3
-    covs = [GaussianCovariance(d), MaternCovariance.(NUs, d)..., RWMCovariance(d)]
     for cov_str in COVS
         cpp = CriticalPointProcess(COVARIANCE[cov_str](d), ALL_CRITICAL, RHO)
         cov = CriticalSPP.covariance(cpp)
@@ -72,7 +71,7 @@ plt = data(df_plot) * lines + href
 set_theme!(theme_ggplot2())
 fig, grid = draw(
     plt,
-    scales(; X=(; label=L"r"), Y=(; label=L"g_{\mathcal{L}}(r)"));
+    scales(; X=(; label=L"r"), Y=(; label=L""));
     figure=(; size=(800, 500)),
     facet=(; linkxaxes=:minimal, linkyaxes=:none),
     legend=(; position=:top, titlesize=0),
