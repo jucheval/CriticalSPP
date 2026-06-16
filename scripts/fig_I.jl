@@ -33,50 +33,51 @@ end
     @rsubset!(:pcf < 3.0) # remove exploding values
 end
 
-# helper dataframe to compute the minimal r range for each type and dimension
-rminmax_df = @chain df begin
-    @groupby :type :d :cov
-    @combine :rmax = maximum(:r)
-    @groupby :type :d
-    @combine :rminmax = minimum(:rmax)
-end
-# filter dataframe to get same r ranges on each facet
-
 ## Plot
-### define a new dataframe for the plot so that `df` keeps all data
-df_plot = @chain df begin
-    leftjoin(rminmax_df; on=[:type, :d])
-    @rsubset! :r <= :rminmax
-    @select! Not(:rminmax)
+using SpecialFunctions
+
+function funI(rs, pcfs, d, rho)
+    sB1 = 2 * pi^(d / 2) / gamma(d / 2)
+    step = mean(diff(rs))
+    return 1 .+ rho * step * cumsum(sB1 * rs .^ (d - 1) .* (pcfs .- 1))
+end
+
+df_I = @chain df begin
+    @groupby :type :d :cov
+    @transform @astable begin
+        d, rho = first(:d), first(:rho)
+        :I = funI(:r, :pcf, d, rho)
+        :I_lower = funI(:r, :pcf_lower, d, rho)
+        :I_upper = funI(:r, :pcf_upper, d, rho)
+    end
 end
 
 # labels for the facets columns
 const D_LABELS = Dict(1 => L"d=1", 2 => L"d=2", 3 => L"d=3")
-@rtransform! df_plot :d = D_LABELS[:d]
+@rtransform! df_I :d = D_LABELS[:d]
 # labels for the facets rows
 const TYPE_LABELS = Dict("all" => L"\mathcal{L}=\{0,...,d\}", "max" => L"\mathcal{L}=\{d\}")
-@rtransform! df_plot :type = TYPE_LABELS[:type]
+@rtransform! df_I :type = TYPE_LABELS[:type]
 
 # solid lines for the pcf
-lines = visual(Lines) * mapping(:r, :pcf; color=:cov, row=:type, col=:d)
+lines = visual(Lines) * mapping(:r, :I; color=:cov, row=:type, col=:d)
 # bands for the confidence intervals
 band =
-    visual(Band; alpha=0.3) *
-    mapping(:r, :pcf_lower, :pcf_upper; color=:cov, row=:type, col=:d)
+    visual(Band; alpha=0.3) * mapping(:r, :I_lower, :I_upper; color=:cov, row=:type, col=:d)
 # dashed line for the reference value of 1
 href = visual(HLines; color=:black, linestyle=:dash) * mapping(1.0)
 # combine the three layers into a single plot object
-plt = data(df_plot) * (lines + band) + href
+plt = data(df_I) * (lines + band) + href
 
 # plot
 set_theme!(theme_ggplot2())
 fig, grid = draw(
     plt,
-    scales(; X=(; label=L"r"), Y=(; label=L"g_{\mathcal{L}}(r)"));
+    scales(; X=(; label=L"r"), Y=(; label=L"I_{\mathcal{L}}(r)"));
     figure=(; size=(800, 500)),
     facet=(; linkxaxes=:minimal, linkyaxes=:none),
     legend=(; position=:top, titlesize=0),
 )
 
 ## Save
-safesave(joinpath(plotdir, "pcf.pdf"), fig)
+safesave(joinpath(plotdir, "I.pdf"), fig)
