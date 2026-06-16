@@ -26,7 +26,7 @@ end
 ## Plot
 # keep only small values for asymptotic behavior
 ### define a new dataframe so that `df` keeps all data
-df_plot = @rsubset df :r <= 0.02
+df_plot = @rsubset df :r <= 0.02 :pcf > 0.0
 
 # labels for the facets columns
 const D_LABELS = Dict(1 => L"d=1", 2 => L"d=2", 3 => L"d=3")
