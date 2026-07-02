@@ -1,4 +1,8 @@
-using BenchmarkTools, CriticalSPP
+using BenchmarkTools
+using CriticalSPP
+
+using Logging
+global_logger(NullLogger()) # used to remove the logging info messages
 
 const SUITE = BenchmarkGroup()
 
@@ -14,11 +18,10 @@ names = ["Gaussian/d=4/MAX", "Matern/d=3/ALL", "RWM/d=2/ALL"]
 
 for r in [0.1, 2.0], (cpp, name) in zip(cpps, names)
     d = dimension(cpp)
-    dd = 2 * (d + d * (d - 1) ÷ 2)
+    rs = [r]
     SUITE["pcf"][name]["r=$r"] = @benchmarkable(
-        CriticalSPP._pair_correlation_single($cpp, $r, N01),
-        evals = 10,
-        samples = 1000,
-        setup = (N01 = randn(Float64, $dd, Int(1e3)))
+        pair_correlation_function($cpp, $rs; n_MC=10000, show_progress=false),
+        evals = 1,
+        samples = 1000
     )
 end
